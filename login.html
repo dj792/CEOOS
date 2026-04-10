@@ -8,16 +8,124 @@
     /* ── Reset & base ───────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* ── CSS variables: Dark mode (default) ─────────────────────── */
+    :root {
+      --bg: radial-gradient(ellipse at 50% 30%, #2a3145 0%, #1c2130 40%, #141820 100%);
+      --text-primary: #f0f2f5;
+      --text-secondary: #8a9ab5;
+      --text-muted: #4a5872;
+      --text-link: #6a7fa0;
+      --text-link-hover: #a0b0cc;
+      --input-bg: rgba(255, 255, 255, 0.06);
+      --input-border: rgba(255, 255, 255, 0.12);
+      --input-border-focus: rgba(255, 255, 255, 0.30);
+      --input-bg-focus: rgba(255, 255, 255, 0.09);
+      --input-shadow-focus: rgba(255, 255, 255, 0.04);
+      --input-color: #e8ecf2;
+      --input-placeholder: #5a6b85;
+      --btn-bg: linear-gradient(180deg, #2e3346 0%, #1a1e2b 50%, #151820 100%);
+      --btn-border: rgba(255,255,255,0.14);
+      --btn-color: #e8ecf2;
+      --btn-shadow: 0 1px 0 rgba(255,255,255,0.10) inset, 0 -1px 0 rgba(0,0,0,0.40) inset, 0 4px 16px rgba(0,0,0,0.35);
+      --btn-shadow-hover: 0 1px 0 rgba(255,255,255,0.10) inset, 0 -1px 0 rgba(0,0,0,0.40) inset, 0 6px 20px rgba(0,0,0,0.45);
+      --btn-shadow-active: 0 1px 0 rgba(255,255,255,0.06) inset, 0 -1px 0 rgba(0,0,0,0.40) inset, 0 2px 8px rgba(0,0,0,0.30);
+      --logo-filter: drop-shadow(0 2px 12px rgba(255,255,255,0.12));
+      --logo-stroke: rgba(255,255,255,0.70);
+      --logo-fill: white;
+      --faceid-stroke: white;
+      --divider-line: rgba(255,255,255,0.08);
+      --home-bar: rgba(255,255,255,0.25);
+      --toggle-bg: rgba(255,255,255,0.10);
+      --toggle-border: rgba(255,255,255,0.15);
+      --toggle-icon: #c0cce0;
+      --toggle-shadow: 0 2px 8px rgba(0,0,0,0.30);
+    }
+
+    /* ── Light mode overrides ───────────────────────────────────── */
+    body.light {
+      --bg: radial-gradient(ellipse at 50% 20%, #e8edf5 0%, #f0f3f8 40%, #f8f9fb 100%);
+      --text-primary: #1a1e2a;
+      --text-secondary: #5a6880;
+      --text-muted: #9aaabf;
+      --text-link: #5a7090;
+      --text-link-hover: #2a4060;
+      --input-bg: rgba(0, 0, 0, 0.04);
+      --input-border: rgba(0, 0, 0, 0.10);
+      --input-border-focus: rgba(0, 0, 0, 0.25);
+      --input-bg-focus: rgba(0, 0, 0, 0.06);
+      --input-shadow-focus: rgba(0, 0, 0, 0.05);
+      --input-color: #1a1e2a;
+      --input-placeholder: #9aaabf;
+      --btn-bg: linear-gradient(180deg, #2e3a52 0%, #1e2840 50%, #161e32 100%);
+      --btn-border: rgba(0,0,0,0.15);
+      --btn-color: #f0f2f5;
+      --btn-shadow: 0 1px 0 rgba(255,255,255,0.12) inset, 0 -1px 0 rgba(0,0,0,0.25) inset, 0 4px 16px rgba(0,0,0,0.18);
+      --btn-shadow-hover: 0 1px 0 rgba(255,255,255,0.12) inset, 0 -1px 0 rgba(0,0,0,0.25) inset, 0 6px 20px rgba(0,0,0,0.24);
+      --btn-shadow-active: 0 1px 0 rgba(255,255,255,0.08) inset, 0 -1px 0 rgba(0,0,0,0.20) inset, 0 2px 8px rgba(0,0,0,0.15);
+      --logo-filter: drop-shadow(0 2px 12px rgba(0,0,0,0.12));
+      --logo-stroke: rgba(30,40,60,0.60);
+      --logo-fill: #1e2840;
+      --faceid-stroke: #1e2840;
+      --divider-line: rgba(0,0,0,0.08);
+      --home-bar: rgba(0,0,0,0.15);
+      --toggle-bg: rgba(0,0,0,0.06);
+      --toggle-border: rgba(0,0,0,0.10);
+      --toggle-icon: #3a4a65;
+      --toggle-shadow: 0 2px 8px rgba(0,0,0,0.10);
+    }
+
     body {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       font-family: -apple-system, "SF Pro Display", "SF Pro Text", BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-      background: radial-gradient(ellipse at 50% 30%, #2a3145 0%, #1c2130 40%, #141820 100%);
-      color: #ffffff;
+      background: var(--bg);
+      color: var(--text-primary);
       -webkit-font-smoothing: antialiased;
+      transition: background 0.4s ease, color 0.4s ease;
     }
+
+    /* ── Mode toggle button ─────────────────────────────────────── */
+    .mode-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--toggle-border);
+      background: var(--toggle-bg);
+      box-shadow: var(--toggle-shadow);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.15s ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 100;
+    }
+
+    .mode-toggle:hover {
+      transform: scale(1.08);
+    }
+
+    .mode-toggle:active {
+      transform: scale(0.94);
+    }
+
+    .mode-toggle svg {
+      width: 18px;
+      height: 18px;
+      transition: opacity 0.2s ease, transform 0.3s ease;
+    }
+
+    /* Show/hide sun & moon icons */
+    .icon-moon { display: block; }
+    .icon-sun  { display: none; }
+    body.light .icon-moon { display: none; }
+    body.light .icon-sun  { display: block; }
 
     /* ── Card container ─────────────────────────────────────────── */
     .card {
@@ -38,7 +146,8 @@
     .logo-wrap svg {
       width: 72px;
       height: 72px;
-      filter: drop-shadow(0 2px 12px rgba(255,255,255,0.12));
+      filter: var(--logo-filter);
+      transition: filter 0.4s ease;
     }
 
     /* ── Headline ───────────────────────────────────────────────── */
@@ -46,19 +155,21 @@
       font-size: 28px;
       font-weight: 600;
       letter-spacing: -0.5px;
-      color: #f0f2f5;
+      color: var(--text-primary);
       text-align: center;
       margin-bottom: 10px;
+      transition: color 0.4s ease;
     }
 
     .subtext {
       font-size: 14px;
       font-weight: 400;
-      color: #8a9ab5;
+      color: var(--text-secondary);
       text-align: center;
       line-height: 1.5;
       margin-bottom: 36px;
       letter-spacing: 0.1px;
+      transition: color 0.4s ease;
     }
 
     /* ── Form ───────────────────────────────────────────────────── */
@@ -72,25 +183,25 @@
     .input-field {
       width: 100%;
       padding: 15px 18px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
       border-radius: 12px;
-      color: #e8ecf2;
+      color: var(--input-color);
       font-size: 15px;
       font-family: inherit;
       outline: none;
-      transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+      transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, color 0.4s ease;
       -webkit-appearance: none;
     }
 
     .input-field::placeholder {
-      color: #5a6b85;
+      color: var(--input-placeholder);
     }
 
     .input-field:focus {
-      border-color: rgba(255, 255, 255, 0.30);
-      background: rgba(255, 255, 255, 0.09);
-      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
+      border-color: var(--input-border-focus);
+      background: var(--input-bg-focus);
+      box-shadow: 0 0 0 3px var(--input-shadow-focus);
     }
 
     /* ── Log In button ──────────────────────────────────────────── */
@@ -104,20 +215,14 @@
       font-weight: 600;
       font-family: inherit;
       letter-spacing: 0.2px;
-      color: #e8ecf2;
+      color: var(--btn-color);
       cursor: pointer;
       outline: none;
       position: relative;
       overflow: hidden;
-
-      /* Dark glossy gradient matching the mockup */
-      background: linear-gradient(180deg, #2e3346 0%, #1a1e2b 50%, #151820 100%);
-      border: 1px solid rgba(255,255,255,0.14);
-      box-shadow:
-        0 1px 0 rgba(255,255,255,0.10) inset,
-        0 -1px 0 rgba(0,0,0,0.40) inset,
-        0 4px 16px rgba(0,0,0,0.35);
-
+      background: var(--btn-bg);
+      border: 1px solid var(--btn-border);
+      box-shadow: var(--btn-shadow);
       transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
     }
 
@@ -134,18 +239,12 @@
 
     .btn-login:hover {
       opacity: 0.88;
-      box-shadow:
-        0 1px 0 rgba(255,255,255,0.10) inset,
-        0 -1px 0 rgba(0,0,0,0.40) inset,
-        0 6px 20px rgba(0,0,0,0.45);
+      box-shadow: var(--btn-shadow-hover);
     }
 
     .btn-login:active {
       transform: scale(0.98);
-      box-shadow:
-        0 1px 0 rgba(255,255,255,0.06) inset,
-        0 -1px 0 rgba(0,0,0,0.40) inset,
-        0 2px 8px rgba(0,0,0,0.30);
+      box-shadow: var(--btn-shadow-active);
     }
 
     /* ── Face ID ────────────────────────────────────────────────── */
@@ -170,8 +269,9 @@
     .faceid-label {
       font-size: 12px;
       font-weight: 500;
-      color: #8a9ab5;
+      color: var(--text-secondary);
       letter-spacing: 0.4px;
+      transition: color 0.4s ease;
     }
 
     /* ── Divider ────────────────────────────────────────────────── */
@@ -186,14 +286,16 @@
     .divider-line {
       flex: 1;
       height: 1px;
-      background: rgba(255,255,255,0.08);
+      background: var(--divider-line);
+      transition: background 0.4s ease;
     }
 
     .divider-text {
       font-size: 12px;
-      color: #4a5872;
+      color: var(--text-muted);
       font-weight: 500;
       letter-spacing: 0.5px;
+      transition: color 0.4s ease;
     }
 
     /* ── Links ──────────────────────────────────────────────────── */
@@ -206,21 +308,22 @@
 
     .link {
       font-size: 13px;
-      color: #6a7fa0;
+      color: var(--text-link);
       text-decoration: none;
       font-weight: 500;
       transition: color 0.2s ease;
     }
 
-    .link:hover { color: #a0b0cc; }
+    .link:hover { color: var(--text-link-hover); }
 
     /* ── Home indicator (decorative) ────────────────────────────── */
     .home-bar {
       width: 134px;
       height: 5px;
-      background: rgba(255,255,255,0.25);
+      background: var(--home-bar);
       border-radius: 3px;
       margin-top: 44px;
+      transition: background 0.4s ease;
     }
 
     /* ── Responsive ─────────────────────────────────────────────── */
@@ -232,6 +335,27 @@
 </head>
 <body>
 
+  <!-- Light / Dark mode toggle -->
+  <button class="mode-toggle" id="modeToggle" aria-label="Toggle light/dark mode">
+    <!-- Moon icon (shown in dark mode) -->
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"
+        stroke="var(--toggle-icon)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <!-- Sun icon (shown in light mode) -->
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="4" stroke="var(--toggle-icon)" stroke-width="1.8"/>
+      <line x1="12" y1="2"  x2="12" y2="5"  stroke="var(--toggle-icon)" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="12" y1="19" x2="12" y2="22" stroke="var(--toggle-icon)" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="4.22" y1="4.22"  x2="6.34" y2="6.34"  stroke="var(--toggle-icon)" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="17.66" y1="17.66" x2="19.78" y2="19.78" stroke="var(--toggle-icon)" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="2"  y1="12" x2="5"  y2="12" stroke="var(--toggle-icon)" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="19" y1="12" x2="22" y2="12" stroke="var(--toggle-icon)" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"  stroke="var(--toggle-icon)" stroke-width="1.8" stroke-linecap="round"/>
+      <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"  stroke="var(--toggle-icon)" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+  </button>
+
   <div class="card">
 
     <!-- Logo -->
@@ -239,21 +363,21 @@
       <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
         <!-- Orbital ring -->
         <ellipse cx="36" cy="36" rx="30" ry="30"
-          stroke="rgba(255,255,255,0.70)" stroke-width="1.5"
+          stroke="var(--logo-stroke)" stroke-width="1.5"
           stroke-dasharray="3 2.5"
           fill="none"
           transform="rotate(-30 36 36)" />
 
         <!-- Bar chart bars -->
-        <rect x="16" y="42" width="7" height="10" rx="1.5" fill="white" opacity="0.90"/>
-        <rect x="26" y="34" width="7" height="18" rx="1.5" fill="white" opacity="0.90"/>
-        <rect x="36" y="26" width="7" height="26" rx="1.5" fill="white" opacity="0.90"/>
-        <rect x="46" y="20" width="7" height="32" rx="1.5" fill="white" opacity="0.90"/>
+        <rect x="16" y="42" width="7" height="10" rx="1.5" fill="var(--logo-fill)" opacity="0.90"/>
+        <rect x="26" y="34" width="7" height="18" rx="1.5" fill="var(--logo-fill)" opacity="0.90"/>
+        <rect x="36" y="26" width="7" height="26" rx="1.5" fill="var(--logo-fill)" opacity="0.90"/>
+        <rect x="46" y="20" width="7" height="32" rx="1.5" fill="var(--logo-fill)" opacity="0.90"/>
 
         <!-- Rocket / arrow indicator -->
         <g transform="translate(48, 14) rotate(45)">
-          <polygon points="0,-7 5,4 0,2 -5,4" fill="white" opacity="0.95"/>
-          <line x1="0" y1="2" x2="0" y2="9" stroke="white" stroke-width="1.5" opacity="0.70"/>
+          <polygon points="0,-7 5,4 0,2 -5,4" fill="var(--logo-fill)" opacity="0.95"/>
+          <line x1="0" y1="2" x2="0" y2="9" stroke="var(--logo-fill)" stroke-width="1.5" opacity="0.70"/>
         </g>
       </svg>
     </div>
@@ -273,17 +397,17 @@
     <div class="faceid-wrap" role="button" aria-label="Sign in with Face ID" tabindex="0">
       <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
         <!-- Corner brackets -->
-        <path d="M4 12V6a2 2 0 0 1 2-2h6" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-        <path d="M32 12V6a2 2 0 0 0-2-2h-6" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-        <path d="M4 24v6a2 2 0 0 0 2 2h6" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-        <path d="M32 24v6a2 2 0 0 1-2 2h-6" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M4 12V6a2 2 0 0 1 2-2h6" stroke="var(--faceid-stroke)" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M32 12V6a2 2 0 0 0-2-2h-6" stroke="var(--faceid-stroke)" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M4 24v6a2 2 0 0 0 2 2h6" stroke="var(--faceid-stroke)" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M32 24v6a2 2 0 0 1-2 2h-6" stroke="var(--faceid-stroke)" stroke-width="1.8" stroke-linecap="round"/>
         <!-- Eyes -->
-        <circle cx="13" cy="15" r="1.2" fill="white"/>
-        <circle cx="23" cy="15" r="1.2" fill="white"/>
+        <circle cx="13" cy="15" r="1.2" fill="var(--faceid-stroke)"/>
+        <circle cx="23" cy="15" r="1.2" fill="var(--faceid-stroke)"/>
         <!-- Nose line -->
-        <path d="M18 15v4" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M18 15v4" stroke="var(--faceid-stroke)" stroke-width="1.5" stroke-linecap="round"/>
         <!-- Smile -->
-        <path d="M13 22 Q18 26 23 22" stroke="white" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <path d="M13 22 Q18 26 23 22" stroke="var(--faceid-stroke)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
       </svg>
       <span class="faceid-label">Face ID</span>
     </div>
@@ -304,6 +428,21 @@
     <div class="home-bar"></div>
 
   </div>
+
+  <script>
+    const toggle = document.getElementById('modeToggle');
+    const body   = document.body;
+
+    // Restore saved preference
+    if (localStorage.getItem('ceoos-theme') === 'light') {
+      body.classList.add('light');
+    }
+
+    toggle.addEventListener('click', () => {
+      body.classList.toggle('light');
+      localStorage.setItem('ceoos-theme', body.classList.contains('light') ? 'light' : 'dark');
+    });
+  </script>
 
 </body>
 </html>
