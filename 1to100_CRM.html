@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1to100 CRM</title>
+<style>
+/* ── Reset & Variables ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:       #1a2e4a;
+  --navy-mid:   #243b55;
+  --blue:       #2d6cdf;
+  --blue-light: #5b8dee;
+  --green:      #1a9e6e;
+  --red:        #d63031;
+  --amber:      #e17055;
+  --bg:         #f0f3f9;
+  --white:      #ffffff;
+  --border:     #dce3ef;
+  --text:       #1e2d40;
+  --muted:      #6b7f99;
+  --row-alt:    #f7f9fd;
+  --row-hover:  #e8f0fd;
+
+  --sh-sm:  0 1px 3px rgba(0,0,0,.08);
+  --sh-md:  0 4px 12px rgba(0,0,0,.10);
+  --sh-lg:  0 12px 30px rgba(0,0,0,.14);
+  --radius: 8px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Utility ────────────────────────────────────────────────── */
+.hidden { display: none !important; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 7px 14px; border-radius: 6px; border: none;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: background .15s, box-shadow .15s, transform .1s;
+  white-space: nowrap; text-decoration: none;
+}
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.btn-primary   { background: var(--blue);  color: #fff; }
+.btn-primary:hover:not(:disabled)  { background: var(--blue-light); }
+.btn-success   { background: var(--green); color: #fff; }
+.btn-success:hover:not(:disabled)  { background: #15875d; }
+.btn-danger    { background: var(--red);   color: #fff; }
+.btn-danger:hover:not(:disabled)   { background: #b52828; }
+.btn-ghost {
+  background: rgba(255,255,255,.12); color: #fff;
+  border: 1px solid rgba(255,255,255,.2);
+}
+.btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,.22); }
+.btn-outline {
+  background: var(--white); color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-outline:hover:not(:disabled) { border-color: var(--blue); color: var(--blue); background: #f0f4ff; }
+.btn-sm { padding: 4px 9px; font-size: 12px; border-radius: 5px; }
+.btn-icon { padding: 5px 8px; }
+
+/* ── Loading Overlay ────────────────────────────────────────── */
+#loadingOverlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(240,243,249,.85);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+}
+.loader {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 3px solid var(--border);
+  border-top-color: var(--blue);
+  animation: spin .65s linear infinite;
+}
+.loader-sm {
+  width: 16px; height: 16px; border-width: 2px;
+  border-color: rgba(255,255,255,.3); border-top-color: #fff;
+  display: inline-block; border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#loadingText { font-size: 14px; color: var(--muted); }
+
+/* ── Setup Screen ───────────────────────────────────────────── */
+#setupScreen {
+  flex: 1; display: flex;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.setup-card {
+  background: var(--white); border-radius: 14px;
+  box-shadow: var(--sh-lg); padding: 44px 48px;
+  max-width: 560px; width: 100%;
+}
+.setup-card .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+.brand-logo { font-size: 28px; font-weight: 800; color: var(--navy); letter-spacing: -1px; }
+.brand-badge {
+  background: var(--blue); color: #fff; font-size: 11px;
+  font-weight: 700; padding: 2px 8px; border-radius: 5px; letter-spacing: .5px;
+}
+.setup-card h2 { font-size: 22px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.setup-card .subtitle { color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 28px; }
+
+.steps-box {
+  background: #eef3ff; border-radius: var(--radius);
+  padding: 18px 20px; margin-bottom: 26px;
+}
+.steps-box h4 {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .7px; color: var(--blue); margin-bottom: 12px;
+}
+.steps-box ol { padding-left: 18px; font-size: 13px; line-height: 2.1; color: var(--text); }
+.steps-box li b { color: var(--navy); }
+.steps-box a { color: var(--blue); text-decoration: none; }
+.steps-box a:hover { text-decoration: underline; }
+.steps-box code {
+  background: rgba(45,108,223,.1); padding: 1px 5px;
+  border-radius: 3px; font-size: 12px; font-family: monospace;
+  color: var(--blue);
+}
+
+.field-label { font-size: 13px; font-weight: 600; color: var(--text); display: block; margin-bottom: 6px; }
+.field-input {
+  width: 100%; padding: 10px 13px; border: 1.5px solid var(--border);
+  border-radius: 7px; font-size: 14px; outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  color: var(--text); background: var(--white);
+}
+.field-input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(45,108,223,.15);
+}
+.url-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+.setup-submit-btn {
+  width: 100%; justify-content: center;
+  padding: 12px; font-size: 15px; margin-top: 22px;
+  border-radius: 8px; letter-spacing: .2px;
+}
+
+.setup-error {
+  display: none; background: #fff5f5; border: 1px solid #fed7d7;
+  color: var(--red); border-radius: 7px; padding: 12px 14px;
+  font-size: 13px; margin-top: 14px;
+}
+
+/* ── Main App ───────────────────────────────────────────────── */
+#mainApp { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Header */
+.app-header {
+  background: var(--navy); color: #fff;
+  padding: 0 22px; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: var(--sh-md); flex-shrink: 0; z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.header-brand { font-size: 17px; font-weight: 800; letter-spacing: -.5px; }
+.header-badge {
+  background: var(--blue); font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 4px; letter-spacing: .5px;
+}
+.header-sheet-name {
+  color: rgba(255,255,255,.5); font-size: 12px;
+  border-left: 1px solid rgba(255,255,255,.2); padding-left: 14px;
+}
+.header-right { display: flex; align-items: center; gap: 8px; }
+.user-chip {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; color: rgba(255,255,255,.85);
+}
+.user-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--blue); display: flex; align-items: center;
+  justify-content: center; font-weight: 700; font-size: 13px; color: #fff;
+}
+
+/* Toolbar */
+.toolbar {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 10px 18px; display: flex; align-items: center;
+  gap: 10px; flex-wrap: wrap; flex-shrink: 0;
+}
+.search-wrap {
+  position: relative; flex: 1; min-width: 180px; max-width: 360px;
+}
+.search-wrap input {
+  width: 100%; padding: 7px 12px 7px 34px;
+  border: 1.5px solid var(--border); border-radius: 7px;
+  font-size: 13px; outline: none; background: var(--bg);
+  transition: all .15s;
+}
+.search-wrap input:focus {
+  border-color: var(--blue); background: var(--white);
+  box-shadow: 0 0 0 3px rgba(45,108,223,.1);
+}
+.search-icon {
+  position: absolute; left: 10px; top: 50%;
+  transform: translateY(-50%); font-size: 13px; color: var(--muted);
+  pointer-events: none;
+}
+
+.filter-wrap { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
+.filter-tag {
+  font-size: 11px; font-weight: 600; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.filter-select {
+  padding: 6px 10px; border: 1.5px solid var(--border);
+  border-radius: 6px; font-size: 12px; color: var(--text);
+  background: var(--white); cursor: pointer; outline: none;
+  max-width: 170px;
+}
+.filter-select:focus { border-color: var(--blue); }
+
+.toolbar-spacer { flex: 1; }
+.toolbar-actions { display: flex; gap: 7px; align-items: center; }
+
+/* Column toggle strip */
+.col-strip {
+  background: #f5f7fc; border-bottom: 1px solid var(--border);
+  padding: 6px 18px; display: flex; align-items: center;
+  gap: 6px; flex-wrap: wrap; flex-shrink: 0;
+}
+.col-strip-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .6px; color: var(--muted); margin-right: 2px;
+}
+.col-chip {
+  font-size: 11px; padding: 2px 10px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--white);
+  color: var(--muted); cursor: pointer; user-select: none;
+  transition: all .15s; white-space: nowrap;
+}
+.col-chip:hover { border-color: var(--blue); color: var(--blue); }
+.col-chip.on { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+/* Table area */
+.table-wrap { flex: 1; overflow: auto; position: relative; }
+
+table {
+  width: 100%; border-collapse: collapse;
+  font-size: 13px; min-width: 500px;
+}
+thead {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--navy-mid);
+}
+thead th {
+  padding: 10px 13px; text-align: left;
+  color: rgba(255,255,255,.85); font-size: 11.5px;
+  font-weight: 600; letter-spacing: .3px; white-space: nowrap;
+  cursor: pointer; user-select: none;
+  transition: background .12s;
+  border-right: 1px solid rgba(255,255,255,.07);
+}
+thead th:last-child { border-right: none; }
+thead th:hover { background: var(--navy); }
+thead th.sort-asc::after  { content: ' ↑'; opacity: .7; }
+thead th.sort-desc::after { content: ' ↓'; opacity: .7; }
+thead th.th-actions { cursor: default; width: 110px; text-align: center; }
+thead th.th-actions:hover { background: var(--navy-mid); }
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+tbody tr:nth-child(even) { background: var(--row-alt); }
+tbody tr:hover { background: var(--row-hover); }
+tbody td {
+  padding: 9px 13px; vertical-align: middle;
+  max-width: 200px; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.td-first { font-weight: 600; color: var(--navy); }
+.td-actions { text-align: center; white-space: nowrap; width: 110px; }
+
+.empty-row td {
+  text-align: center; padding: 52px 20px !important;
+  color: var(--muted); font-size: 14px;
+}
+.empty-icon { font-size: 36px; display: block; margin-bottom: 10px; }
+
+/* Status Bar */
+.status-bar {
+  background: var(--white); border-top: 1px solid var(--border);
+  padding: 7px 18px; display: flex; align-items: center;
+  justify-content: space-between; font-size: 12px;
+  color: var(--muted); flex-shrink: 0;
+}
+.pager { display: flex; align-items: center; gap: 5px; }
+.pager button {
+  padding: 3px 9px; border: 1px solid var(--border);
+  border-radius: 4px; background: var(--white);
+  font-size: 12px; cursor: pointer; color: var(--text);
+  transition: all .12s;
+}
+.pager button:hover:not(:disabled) { border-color: var(--blue); color: var(--blue); }
+.pager button:disabled { opacity: .4; cursor: not-allowed; }
+.pager-info { padding: 0 6px; font-size: 12px; }
+.pager-size {
+  padding: 3px 7px; border: 1px solid var(--border);
+  border-radius: 4px; font-size: 12px; background: var(--white);
+  color: var(--text); margin-left: 8px;
+}
+
+/* ── Modal ──────────────────────────────────────────────────── */
+.modal-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(10,20,40,.5); z-index: 500;
+  align-items: flex-start; justify-content: center;
+  padding: 40px 16px; overflow-y: auto;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: var(--white); border-radius: 12px;
+  box-shadow: var(--sh-lg); width: 100%; max-width: 600px;
+  margin: auto; animation: popIn .2s ease;
+}
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(-12px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+.modal-header {
+  padding: 18px 22px 14px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: 16px; font-weight: 700; color: var(--navy); }
+.modal-close {
+  background: none; border: none; font-size: 20px;
+  cursor: pointer; color: var(--muted); line-height: 1;
+  padding: 2px 7px; border-radius: 4px;
+  transition: background .12s, color .12s;
+}
+.modal-close:hover { background: #fff0f0; color: var(--red); }
+.modal-body { padding: 22px; max-height: 62vh; overflow-y: auto; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group.span2 { grid-column: 1 / -1; }
+.form-group label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+.form-group input, .form-group textarea, .form-group select {
+  padding: 8px 11px; border: 1.5px solid var(--border);
+  border-radius: 6px; font-size: 13px; color: var(--text);
+  background: var(--white); outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  font-family: inherit;
+}
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(45,108,223,.12);
+}
+.form-group textarea { resize: vertical; min-height: 72px; }
+.modal-footer {
+  padding: 14px 22px; border-top: 1px solid var(--border);
+  display: flex; justify-content: flex-end; gap: 8px;
+}
+
+/* ── Delete Confirm ─────────────────────────────────────────── */
+#confirmDialog {
+  display: none; position: fixed; inset: 0;
+  background: rgba(10,20,40,.55); z-index: 600;
+  align-items: center; justify-content: center;
+}
+#confirmDialog.open { display: flex; }
+.confirm-box {
+  background: var(--white); border-radius: 12px;
+  padding: 28px 32px; max-width: 380px; width: 90%;
+  box-shadow: var(--sh-lg); animation: popIn .18s ease;
+  text-align: center;
+}
+.confirm-box .confirm-emoji { font-size: 38px; margin-bottom: 12px; }
+.confirm-box h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+.confirm-box p { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 22px; }
+.confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+/* ── Toast ──────────────────────────────────────────────────── */
+#toastZone {
+  position: fixed; bottom: 22px; right: 22px;
+  z-index: 900; display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  padding: 11px 16px; border-radius: 8px; color: #fff;
+  font-size: 13px; display: flex; align-items: center; gap: 8px;
+  box-shadow: var(--sh-md); max-width: 320px;
+  animation: slideIn .25s ease;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: none; }
+}
+.toast.success { background: var(--green); }
+.toast.error   { background: var(--red);   }
+.toast.warn    { background: var(--amber); }
+.toast.info    { background: var(--navy);  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     LOADING OVERLAY
+════════════════════════════════════════════════════════════ -->
+<div id="loadingOverlay" class="hidden">
+  <div class="loader"></div>
+  <div id="loadingText">Loading…</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SETUP SCREEN
+════════════════════════════════════════════════════════════ -->
+<div id="setupScreen">
+  <div class="setup-card">
+    <div class="brand">
+      <span class="brand-logo">1to100</span>
+      <span class="brand-badge">CRM</span>
+    </div>
+    <h2>Connect Your Google Sheet</h2>
+    <p class="subtitle">
+      This CRM syncs live with your <strong>Master List</strong> tab.
+      Follow the 3-minute setup below to get your Apps Script URL, then paste it here.
+    </p>
+
+    <div class="steps-box">
+      <h4>⚙️ One-Time Setup (≈ 3 minutes)</h4>
+      <ol>
+        <li>Open <a href="https://script.google.com" target="_blank">script.google.com</a> → click <b>New Project</b></li>
+        <li>Delete all existing code and paste the contents of <code>AppScript_Backend.gs</code></li>
+        <li>Click <b>Deploy → New Deployment</b></li>
+        <li>Set <b>Type: Web App</b> · <b>Execute as: Me</b> · <b>Access: Anyone</b></li>
+        <li>Click <b>Deploy</b>, authorize when prompted, then <b>copy the Web App URL</b></li>
+        <li>Paste that URL in the field below and click Connect</li>
+      </ol>
+    </div>
+
+    <label class="field-label" for="apiUrlInput">Apps Script Web App URL</label>
+    <input
+      id="apiUrlInput"
+      class="field-input"
+      type="url"
+      placeholder="https://script.google.com/macros/s/.../exec"
+    />
+    <div class="url-hint">Looks like: https://script.google.com/macros/s/AKfy.../exec</div>
+
+    <div id="setupError" class="setup-error"></div>
+
+    <button class="btn btn-primary setup-submit-btn" onclick="connectCRM()">
+      🚀 Connect &amp; Launch CRM
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN APP
+════════════════════════════════════════════════════════════ -->
+<div id="mainApp" style="display:none; flex-direction:column; flex:1; overflow:hidden;">
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <span class="header-brand">1to100 <span class="header-badge">CRM</span></span>
+      <span class="header-sheet-name">Master List</span>
+    </div>
+    <div class="header-right">
+      <button class="btn btn-ghost btn-sm" onclick="refreshData()" title="Reload data from Google Sheets">
+        ↺ Refresh
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="disconnectCRM()">
+        ⇠ Disconnect
+      </button>
+    </div>
+  </header>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input id="searchInput" type="text" placeholder="Search all fields…" oninput="applyFilters()" />
+    </div>
+
+    <div class="filter-wrap" id="filterWrap">
+      <span class="filter-tag">Filter:</span>
+      <!-- dynamic selects injected here -->
+    </div>
+
+    <div class="toolbar-spacer"></div>
+    <div class="toolbar-actions">
+      <button class="btn btn-outline btn-sm" onclick="clearFilters()">✕ Clear</button>
+      <button class="btn btn-primary" onclick="openAddModal()">
+        + Add Record
+      </button>
+    </div>
+  </div>
+
+  <!-- Column Visibility Strip -->
+  <div class="col-strip" id="colStrip">
+    <span class="col-strip-label">Columns</span>
+    <!-- dynamic chips injected here -->
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table id="crmTable">
+      <thead id="tHead"></thead>
+      <tbody id="tBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span id="statusLabel">–</span>
+    <div class="pager">
+      <button onclick="goPage(-1)" id="btnPrev">← Prev</button>
+      <span class="pager-info" id="pagerInfo">Page 1</span>
+      <button onclick="goPage(1)" id="btnNext">Next →</button>
+      <select class="pager-size" id="pageSizeSelect" onchange="onPageSizeChange()">
+        <option value="25">25 / page</option>
+        <option value="50">50 / page</option>
+        <option value="100">100 / page</option>
+        <option value="250">250 / page</option>
+      </select>
+    </div>
+  </div>
+</div><!-- end #mainApp -->
+
+<!-- ═══════════════════════════════════════════════════════════
+     ADD / EDIT MODAL
+════════════════════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="recordModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Add Record</span>
+      <button class="modal-close" onclick="closeModal()" title="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" id="formGrid"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-success" id="saveBtn" onclick="saveRecord()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     DELETE CONFIRM
+════════════════════════════════════════════════════════════ -->
+<div id="confirmDialog">
+  <div class="confirm-box">
+    <div class="confirm-emoji">⚠️</div>
+    <h3>Delete this record?</h3>
+    <p id="confirmMsg">This action is permanent and cannot be undone.</p>
+    <div class="confirm-actions">
+      <button class="btn btn-outline" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirmBtn" onclick="executeDelete()">🗑️ Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Zone -->
+<div id="toastZone"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════ -->
+<script>
+// ────────────────────────────────────────────────────────────
+// STATE
+// ────────────────────────────────────────────────────────────
+let API_URL        = '';
+let headers        = [];      // column names from row 1
+let allRows        = [];      // array of { _row: N, colName: value, … }
+let filteredRows   = [];
+let page           = 1;
+let pageSize       = 25;
+let sortCol        = null;
+let sortDir        = 'asc';
+let editingRow     = null;    // row object being edited (null = adding)
+let deleteRowRef   = null;    // row object pending delete
+let visibleCols    = new Set();
+let activeFilters  = {};      // { colName: value }
+
+// keyword detection for longer textarea fields
+const LONG_KEYWORDS = ['note','comment','description','detail','address','bio','summary','text','remark','info'];
+
+// ────────────────────────────────────────────────────────────
+// SETUP / CONNECT
+// ────────────────────────────────────────────────────────────
+function connectCRM() {
+  const url = document.getElementById('apiUrlInput').value.trim();
+  const err = document.getElementById('setupError');
+  err.style.display = 'none';
+
+  if (!url || !url.startsWith('https://script.google.com')) {
+    err.textContent = 'Please enter a valid Apps Script Web App URL (starts with https://script.google.com/macros/…)';
+    err.style.display = 'block';
+    return;
+  }
+
+  API_URL = url;
+  showLoading('Connecting to Google Sheets…');
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'flex';
+
+  fetchData();
+}
+
+function disconnectCRM() {
+  API_URL = '';
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('setupScreen').style.display = 'flex';
+}
+
+// ────────────────────────────────────────────────────────────
+// API CALLS  (JSONP — works from file://, localhost, anywhere)
+// ────────────────────────────────────────────────────────────
+function apiCall(action, payload = {}) {
+  return new Promise((resolve, reject) => {
+    // Unique callback name
+    const cb = '_crm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+
+    // Cleanup helper
+    const cleanup = () => {
+      delete window[cb];
+      const el = document.getElementById(cb);
+      if (el) el.remove();
+    };
+
+    // Timeout (30s)
+    const timer = setTimeout(() => {
+      cleanup();
+      reject(new Error('Request timed out. Check your Apps Script URL and try again.'));
+    }, 30000);
+
+    // Global callback that Apps Script will call
+    window[cb] = (data) => {
+      clearTimeout(timer);
+      cleanup();
+      if (data && data.error) reject(new Error(data.error));
+      else resolve(data);
+    };
+
+    // Build URL
+    const url = new URL(API_URL);
+    url.searchParams.set('action', action);
+    url.searchParams.set('callback', cb);
+    if (Object.keys(payload).length > 0) {
+      url.searchParams.set('payload', JSON.stringify(payload));
+    }
+
+    // URL length guard (browsers typically support ~8000 chars)
+    if (url.toString().length > 7500) {
+      clearTimeout(timer);
+      cleanup();
+      reject(new Error('Record is too large to save (data exceeds URL limit). Shorten some field values.'));
+      return;
+    }
+
+    // Inject <script> tag — bypasses CORS entirely
+    const script = document.createElement('script');
+    script.id = cb;
+    script.src = url.toString();
+    script.onerror = () => {
+      clearTimeout(timer);
+      cleanup();
+      reject(new Error(
+        'Could not reach the Apps Script endpoint.\n' +
+        '• Check that your Web App URL is correct\n' +
+        '• Re-deploy the script if you made changes\n' +
+        '• Ensure "Who has access" is set to Anyone'
+      ));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+// ────────────────────────────────────────────────────────────
+// DATA FETCH
+// ────────────────────────────────────────────────────────────
+async function fetchData() {
+  showLoading('Loading Master List…');
+  try {
+    const result = await apiCall('getData');
+    const raw = result.data || [];
+
+    if (raw.length === 0) {
+      toast('The Master List sheet appears to be empty.', 'warn');
+      hideLoading();
+      return;
+    }
+
+    // Row 1 = headers
+    headers = raw[0].map(String);
+
+    // Build row objects; skip fully-empty rows
+    allRows = [];
+    for (let i = 1; i < raw.length; i++) {
+      const rowArr = raw[i];
+      // Skip row if every cell is blank
+      if (rowArr.every(c => c === '' || c === null || c === undefined)) continue;
+      const obj = { _row: i + 1 }; // _row = 1-based Google Sheets row index
+      headers.forEach((h, ci) => {
+        obj[h] = rowArr[ci] !== undefined && rowArr[ci] !== null
+          ? String(rowArr[ci])
+          : '';
+      });
+      allRows.push(obj);
+    }
+
+    // Init visible columns (show all)
+    visibleCols = new Set(headers);
+
+    // Reset view state
+    page = 1;
+    sortCol = null;
+    activeFilters = {};
+
+    buildColStrip();
+    buildFilterDropdowns();
+    applyFilters();
+
+    toast(`Loaded ${allRows.length.toLocaleString()} records`, 'success');
+  } catch (e) {
+    console.error(e);
+    toast('Could not load data: ' + e.message, 'error');
+  }
+  hideLoading();
+}
+
+async function refreshData() {
+  await fetchData();
+}
+
+// ────────────────────────────────────────────────────────────
+// COLUMN STRIP
+// ────────────────────────────────────────────────────────────
+function buildColStrip() {
+  const strip = document.getElementById('colStrip');
+  // keep the label span, remove old chips
+  const label = strip.querySelector('.col-strip-label');
+  strip.innerHTML = '';
+  strip.appendChild(label);
+
+  headers.forEach(h => {
+    const chip = document.createElement('span');
+    chip.className = 'col-chip on';
+    chip.textContent = h;
+    chip.title = 'Toggle column';
+    chip.dataset.col = h;
+    chip.onclick = () => {
+      if (visibleCols.has(h)) {
+        if (visibleCols.size === 1) return; // keep at least one
+        visibleCols.delete(h);
+        chip.classList.remove('on');
+      } else {
+        visibleCols.add(h);
+        chip.classList.add('on');
+      }
+      renderTable();
+    };
+    strip.appendChild(chip);
+  });
+}
+
+// ────────────────────────────────────────────────────────────
+// FILTER DROPDOWNS  (first 4 columns that have ≤ 80 unique values)
+// ────────────────────────────────────────────────────────────
+function buildFilterDropdowns() {
+  const wrap = document.getElementById('filterWrap');
+  // Keep the label span
+  const label = wrap.querySelector('.filter-tag');
+  wrap.innerHTML = '';
+  wrap.appendChild(label);
+
+  let count = 0;
+  for (let ci = 0; ci < headers.length && count < 4; ci++) {
+    const h = headers[ci];
+    const vals = [...new Set(allRows.map(r => r[h]).filter(v => v !== ''))].sort();
+    if (vals.length < 2 || vals.length > 80) continue;
+
+    const sel = document.createElement('select');
+    sel.className = 'filter-select';
+    sel.dataset.col = h;
+    sel.innerHTML = `<option value="">All ${h}</option>` +
+      vals.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+    sel.onchange = () => {
+      if (sel.value) activeFilters[h] = sel.value;
+      else delete activeFilters[h];
+      page = 1;
+      applyFilters();
+    };
+    wrap.appendChild(sel);
+    count++;
+  }
+
+  if (count === 0) {
+    label.style.display = 'none';
+  }
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  activeFilters = {};
+  document.querySelectorAll('.filter-select').forEach(s => { s.value = ''; });
+  page = 1;
+  applyFilters();
+}
+
+// ────────────────────────────────────────────────────────────
+// FILTER + SORT → filteredRows
+// ────────────────────────────────────────────────────────────
+function applyFilters() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+
+  filteredRows = allRows.filter(row => {
+    for (const [col, val] of Object.entries(activeFilters)) {
+      if (row[col] !== val) return false;
+    }
+    if (q) {
+      return headers.some(h => (row[h] || '').toLowerCase().includes(q));
+    }
+    return true;
+  });
+
+  if (sortCol) {
+    filteredRows.sort((a, b) => {
+      const av = (a[sortCol] || '').toLowerCase();
+      const bv = (b[sortCol] || '').toLowerCase();
+      const n = parseFloat(av), m = parseFloat(bv);
+      let cmp = 0;
+      if (!isNaN(n) && !isNaN(m)) cmp = n - m;
+      else cmp = av < bv ? -1 : av > bv ? 1 : 0;
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }
+
+  const maxPage = Math.ceil(filteredRows.length / pageSize) || 1;
+  if (page > maxPage) page = maxPage;
+  renderTable();
+}
+
+function doSort(col) {
+  if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  else { sortCol = col; sortDir = 'asc'; }
+  applyFilters();
+}
+
+// ────────────────────────────────────────────────────────────
+// RENDER TABLE
+// ────────────────────────────────────────────────────────────
+function renderTable() {
+  const visCols = headers.filter(h => visibleCols.has(h));
+
+  // ── Header row ──────────────────────────────────────────────
+  const tHead = document.getElementById('tHead');
+  tHead.innerHTML = '<tr>' +
+    visCols.map(h => {
+      const cls = sortCol === h ? (sortDir === 'asc' ? 'sort-asc' : 'sort-desc') : '';
+      return `<th class="${cls}" onclick="doSort('${escQ(h)}')">${esc(h)}</th>`;
+    }).join('') +
+    '<th class="th-actions">Actions</th></tr>';
+
+  // ── Body rows ────────────────────────────────────────────────
+  const tBody = document.getElementById('tBody');
+  const start = (page - 1) * pageSize;
+  const slice = filteredRows.slice(start, start + pageSize);
+
+  if (slice.length === 0) {
+    const colSpan = visCols.length + 1;
+    const isEmpty = allRows.length === 0;
+    tBody.innerHTML = `<tr class="empty-row"><td colspan="${colSpan}">
+      <span class="empty-icon">${isEmpty ? '📋' : '🔍'}</span>
+      ${isEmpty
+        ? 'No records found in the Master List sheet.'
+        : 'No records match your search or filters.'}
+      ${!isEmpty ? '<br><br><button class="btn btn-outline btn-sm" onclick="clearFilters()">Clear Filters</button>' : ''}
+    </td></tr>`;
+  } else {
+    tBody.innerHTML = slice.map(row => {
+      const cells = visCols.map((h, i) => {
+        const v = row[h] || '';
+        const cls = i === 0 ? 'td-first' : '';
+        return `<td class="${cls}" title="${esc(v)}">${esc(v)}</td>`;
+      }).join('');
+      return `<tr>
+        ${cells}
+        <td class="td-actions">
+          <button class="btn btn-outline btn-sm btn-icon" onclick="openEditModal(${row._row})" title="Edit">✏️</button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="openDeleteConfirm(${row._row})" title="Delete" style="margin-left:4px;">🗑️</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ── Status bar ───────────────────────────────────────────────
+  const total = filteredRows.length;
+  const totalPages = Math.ceil(total / pageSize) || 1;
+  const from = total === 0 ? 0 : start + 1;
+  const to   = Math.min(start + pageSize, total);
+
+  document.getElementById('statusLabel').textContent =
+    `${from}–${to} of ${total.toLocaleString()} record${total !== 1 ? 's' : ''}` +
+    (total !== allRows.length ? ` (filtered from ${allRows.length.toLocaleString()} total)` : '');
+
+  document.getElementById('pagerInfo').textContent = `Page ${page} of ${totalPages}`;
+  document.getElementById('btnPrev').disabled = page <= 1;
+  document.getElementById('btnNext').disabled = page >= totalPages;
+}
+
+// ── Pagination ───────────────────────────────────────────────
+function goPage(dir) {
+  const maxPage = Math.ceil(filteredRows.length / pageSize) || 1;
+  page = Math.min(maxPage, Math.max(1, page + dir));
+  renderTable();
+}
+function onPageSizeChange() {
+  pageSize = parseInt(document.getElementById('pageSizeSelect').value);
+  page = 1;
+  renderTable();
+}
+
+// ────────────────────────────────────────────────────────────
+// ADD MODAL
+// ────────────────────────────────────────────────────────────
+function openAddModal() {
+  editingRow = null;
+  document.getElementById('modalTitle').textContent = 'Add New Record';
+  document.getElementById('saveBtn').textContent = '💾 Add Record';
+  buildForm({});
+  document.getElementById('recordModal').classList.add('open');
+}
+
+function openEditModal(rowIdx) {
+  editingRow = allRows.find(r => r._row === rowIdx);
+  if (!editingRow) return;
+  document.getElementById('modalTitle').textContent = 'Edit Record';
+  document.getElementById('saveBtn').textContent = '💾 Save Changes';
+  buildForm(editingRow);
+  document.getElementById('recordModal').classList.add('open');
+}
+
+function buildForm(data) {
+  const grid = document.getElementById('formGrid');
+  grid.innerHTML = headers.map((h, i) => {
+    const val = esc(data[h] || '');
+    const isLong = LONG_KEYWORDS.some(kw => h.toLowerCase().includes(kw));
+    const span2 = isLong ? 'span2' : '';
+    const input = isLong
+      ? `<textarea id="f${i}" rows="3">${val}</textarea>`
+      : `<input type="text" id="f${i}" value="${val}" />`;
+    return `<div class="form-group ${span2}"><label>${esc(h)}</label>${input}</div>`;
+  }).join('');
+
+  // Focus first field
+  setTimeout(() => {
+    const first = document.getElementById('f0');
+    if (first) first.focus();
+  }, 120);
+}
+
+function closeModal() {
+  document.getElementById('recordModal').classList.remove('open');
+}
+
+async function saveRecord() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader-sm"></span> Saving…';
+
+  try {
+    const row = headers.map((h, i) => {
+      const el = document.getElementById('f' + i);
+      return el ? el.value.trim() : '';
+    });
+
+    if (editingRow === null) {
+      await apiCall('addRow', { row });
+      toast('Record added!', 'success');
+    } else {
+      await apiCall('updateRow', { rowIndex: editingRow._row, row });
+      toast('Record updated!', 'success');
+    }
+
+    closeModal();
+    await fetchData();
+  } catch (e) {
+    toast('Save failed: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = editingRow === null ? '💾 Add Record' : '💾 Save Changes';
+}
+
+// ────────────────────────────────────────────────────────────
+// DELETE
+// ────────────────────────────────────────────────────────────
+function openDeleteConfirm(rowIdx) {
+  deleteRowRef = allRows.find(r => r._row === rowIdx);
+  if (!deleteRowRef) return;
+  const label = deleteRowRef[headers[0]] || 'this record';
+  document.getElementById('confirmMsg').textContent =
+    `"${label}" will be permanently removed from your Google Sheet. This cannot be undone.`;
+  document.getElementById('confirmDialog').classList.add('open');
+}
+
+function closeConfirm() {
+  document.getElementById('confirmDialog').classList.remove('open');
+  deleteRowRef = null;
+}
+
+async function executeDelete() {
+  if (!deleteRowRef) return;
+  const btn = document.getElementById('confirmBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader-sm"></span> Deleting…';
+
+  try {
+    await apiCall('deleteRow', { rowIndex: deleteRowRef._row });
+    toast('Record deleted.', 'success');
+    closeConfirm();
+    await fetchData();
+  } catch (e) {
+    toast('Delete failed: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.textContent = '🗑️ Delete';
+  }
+}
+
+// ────────────────────────────────────────────────────────────
+// TOAST
+// ────────────────────────────────────────────────────────────
+function toast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  const icons = { success: '✅', error: '❌', warn: '⚠️', info: 'ℹ️' };
+  el.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${esc(msg)}`;
+  document.getElementById('toastZone').appendChild(el);
+  setTimeout(() => el.remove(), 4500);
+}
+
+// ────────────────────────────────────────────────────────────
+// LOADING
+// ────────────────────────────────────────────────────────────
+function showLoading(txt) {
+  document.getElementById('loadingText').textContent = txt;
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.add('hidden');
+}
+
+// ────────────────────────────────────────────────────────────
+// HELPERS
+// ────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+function escQ(s) {
+  return String(s).replace(/'/g,"\\'").replace(/\\/g,'\\\\');
+}
+
+// ────────────────────────────────────────────────────────────
+// KEYBOARD SHORTCUTS
+// ────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeConfirm(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    if (document.getElementById('recordModal').classList.contains('open')) saveRecord();
+  }
+});
+
+// Close modal on backdrop click
+document.getElementById('recordModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById('confirmDialog').addEventListener('click', function(e) {
+  if (e.target === this) closeConfirm();
+});
+</script>
+
+</body>
+</html>
