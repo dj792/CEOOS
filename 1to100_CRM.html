@@ -72,6 +72,80 @@ body {
 .btn-sm { padding: 4px 9px; font-size: 12px; border-radius: 5px; }
 .btn-icon { padding: 5px 8px; }
 
+/* ── Login Screen ───────────────────────────────────────────── */
+#loginScreen {
+  position: fixed; inset: 0; z-index: 3000;
+  background: linear-gradient(135deg, #0f1e33 0%, #1a2e4a 50%, #0d2040 100%);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.login-card {
+  background: var(--white); border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.4);
+  padding: 44px 48px; width: 100%; max-width: 400px;
+  animation: loginCardIn .35s cubic-bezier(.16,1,.3,1);
+}
+@keyframes loginCardIn {
+  from { opacity: 0; transform: translateY(18px) scale(.97); }
+  to   { opacity: 1; transform: none; }
+}
+.login-brand {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 28px; justify-content: center;
+}
+.login-brand-text { font-size: 26px; font-weight: 800; color: var(--navy); letter-spacing: -1px; }
+.login-brand-badge {
+  background: var(--blue); color: #fff; font-size: 11px;
+  font-weight: 700; padding: 2px 8px; border-radius: 5px; letter-spacing: .5px;
+}
+.login-card h2 {
+  font-size: 18px; font-weight: 700; color: var(--navy);
+  text-align: center; margin-bottom: 6px;
+}
+.login-subtitle {
+  text-align: center; font-size: 13px; color: var(--muted);
+  margin-bottom: 28px;
+}
+.login-field { margin-bottom: 16px; }
+.login-field label {
+  display: block; font-size: 12px; font-weight: 600;
+  color: var(--muted); text-transform: uppercase;
+  letter-spacing: .5px; margin-bottom: 6px;
+}
+.login-field input {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 14px; color: var(--text); outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  background: var(--white);
+}
+.login-field input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(45,108,223,.15);
+}
+.login-btn {
+  width: 100%; justify-content: center;
+  padding: 12px; font-size: 15px; margin-top: 8px;
+  border-radius: 8px; font-weight: 600; letter-spacing: .2px;
+}
+.login-error {
+  background: #fff5f5; border: 1px solid #fecdd3;
+  color: #c0392b; border-radius: 7px; padding: 10px 14px;
+  font-size: 13px; text-align: center; margin-top: 14px;
+  display: none;
+}
+.login-footer {
+  text-align: center; font-size: 11px; color: var(--muted);
+  margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--border);
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-8px); }
+  40%       { transform: translateX(8px); }
+  60%       { transform: translateX(-5px); }
+  80%       { transform: translateX(5px); }
+}
+.shake { animation: shake .4s ease; }
+
 /* ── Loading Overlay ────────────────────────────────────────── */
 #loadingOverlay {
   position: fixed; inset: 0; z-index: 2000;
@@ -409,6 +483,47 @@ tbody td {
 <body>
 
 <!-- ═══════════════════════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-card">
+
+    <div class="login-brand">
+      <span class="login-brand-text">1to100</span>
+      <span class="login-brand-badge">CRM</span>
+    </div>
+
+    <h2>Welcome back</h2>
+    <p class="login-subtitle">Sign in to access your CRM</p>
+
+    <div class="login-field">
+      <label for="loginUser">Username</label>
+      <input id="loginUser" type="text" placeholder="Enter username"
+             autocomplete="username" autocapitalize="none" spellcheck="false" />
+    </div>
+
+    <div class="login-field">
+      <label for="loginPass">Password</label>
+      <input id="loginPass" type="password" placeholder="Enter password"
+             autocomplete="current-password" />
+    </div>
+
+    <button class="btn btn-primary login-btn" onclick="attemptLogin()">
+      Sign In →
+    </button>
+
+    <div id="loginError" class="login-error">
+      Incorrect username or password. Please try again.
+    </div>
+
+    <div class="login-footer">
+      ceokpis.com &nbsp;·&nbsp; Powered by 1to100 Advisors
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
      LOADING OVERLAY
 ════════════════════════════════════════════════════════════ -->
 <div id="loadingOverlay" class="hidden">
@@ -475,8 +590,8 @@ tbody td {
       <button class="btn btn-ghost btn-sm" onclick="refreshData()" title="Reload data from Google Sheets">
         ↺ Refresh
       </button>
-      <button class="btn btn-ghost btn-sm" onclick="disconnectCRM()">
-        ⇠ Disconnect
+      <button class="btn btn-ghost btn-sm" onclick="logout()">
+        ⇠ Sign Out
       </button>
     </div>
   </header>
@@ -574,6 +689,57 @@ tbody td {
      JAVASCRIPT
 ════════════════════════════════════════════════════════════ -->
 <script>
+// ════════════════════════════════════════════════════════════
+// LOGIN CREDENTIALS  ← change these to whatever you like
+// ════════════════════════════════════════════════════════════
+const LOGIN_USERNAME = 'admin';
+const LOGIN_PASSWORD = '1to100crm';
+// ════════════════════════════════════════════════════════════
+
+// ────────────────────────────────────────────────────────────
+// AUTH  (session persists until the browser tab is closed)
+// ────────────────────────────────────────────────────────────
+function checkAuth() {
+  if (sessionStorage.getItem('crm_authed') === 'yes') {
+    document.getElementById('loginScreen').style.display = 'none';
+  }
+}
+
+function attemptLogin() {
+  const user = document.getElementById('loginUser').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  const card  = document.querySelector('.login-card');
+
+  if (user === LOGIN_USERNAME && pass === LOGIN_PASSWORD) {
+    sessionStorage.setItem('crm_authed', 'yes');
+    document.getElementById('loginScreen').style.display = 'none';
+    errEl.style.display = 'none';
+  } else {
+    errEl.style.display = 'block';
+    card.classList.remove('shake');
+    void card.offsetWidth; // reflow to restart animation
+    card.classList.add('shake');
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginPass').focus();
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('crm_authed');
+  // Reset app state
+  API_URL = '';
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+// Run auth check immediately on load
+checkAuth();
+
 // ────────────────────────────────────────────────────────────
 // STATE
 // ────────────────────────────────────────────────────────────
@@ -1081,6 +1247,14 @@ document.addEventListener('keydown', e => {
   if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
     if (document.getElementById('recordModal').classList.contains('open')) saveRecord();
   }
+});
+
+// Enter key on login form
+document.getElementById('loginUser').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('loginPass').focus();
+});
+document.getElementById('loginPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') attemptLogin();
 });
 
 // Close modal on backdrop click
