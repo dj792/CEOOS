@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Membershine — Weekly KPI Insights</title>
+<style>
+  :root {
+    /* Membershine-inspired palette: shine yellow + deep navy on dark Stocks-style canvas */
+    --bg: #0b0f17;
+    --bg-elev: #131826;
+    --bg-elev-2: #1c2233;
+    --card: #161b29;
+    --border: rgba(255,255,255,0.07);
+    --text: #f5f7fb;
+    --text-dim: #9aa3b8;
+    --text-faint: #5b647a;
+    --shine: #ffc94a;            /* Membershine "shine" gold accent */
+    --shine-dim: rgba(255, 201, 74, 0.18);
+    --brand: #4f7cff;             /* membership-blue */
+    --brand-dim: rgba(79, 124, 255, 0.18);
+    --up: #30d158;
+    --up-dim: rgba(48, 209, 88, 0.18);
+    --down: #ff453a;
+    --down-dim: rgba(255, 69, 58, 0.18);
+    --flat: #8e8e93;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: radial-gradient(1200px 600px at 20% -10%, #1a2547 0%, transparent 60%), var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-feature-settings: "ss01", "tnum";
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 28px 24px 80px; }
+
+  /* Header */
+  header.brand {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .brand-mark {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .logo {
+    width: 42px; height: 42px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--shine), #ffaa00);
+    color: #1a1208; font-weight: 900; font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 24px rgba(255,201,74,0.25), inset 0 1px 0 rgba(255,255,255,0.4);
+  }
+  .brand-title { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  .brand-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+  .meta { font-size: 12px; color: var(--text-dim); text-align: right; }
+  .meta b { color: var(--text); }
+
+  /* Hero / dropdown bar */
+  .hero {
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 22px 24px;
+    margin-bottom: 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    flex-wrap: wrap;
+  }
+  .hero h1 {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.02em;
+    margin: 0 0 4px;
+  }
+  .hero p { margin: 0; color: var(--text-dim); font-size: 14px; }
+  .hero .shine { color: var(--shine); }
+  .dept-control { display: flex; align-items: center; gap: 12px; }
+  .dept-label { color: var(--text-dim); font-size: 13px; font-weight: 500; }
+
+  .dept-select {
+    appearance: none;
+    background: var(--bg-elev-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 44px 12px 16px;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 16 16' fill='none'><path d='M4 6L8 10L12 6' stroke='%23ffc94a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    transition: border-color 0.18s ease;
+    min-width: 220px;
+  }
+  .dept-select:hover { border-color: var(--shine-dim); }
+  .dept-select:focus { outline: none; border-color: var(--shine); }
+
+  /* Dept summary header */
+  .dept-summary {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin: 4px 4px 14px;
+  }
+  .dept-name { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  .dept-count { color: var(--text-dim); font-size: 13px; }
+
+  /* KPI grid */
+  .grid {
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    cursor: pointer;
+  }
+  .card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(255,201,74,0.3);
+    background: #1a2032;
+  }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+  .kpi-name {
+    font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.3;
+    max-width: 70%;
+  }
+  .kpi-format-tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .kpi-value {
+    font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-top: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+  .kpi-change {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 4px;
+    font-size: 13px; font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+  }
+  .up { color: var(--up); background: var(--up-dim); }
+  .down { color: var(--down); background: var(--down-dim); }
+  .flat { color: var(--flat); background: rgba(142,142,147,0.18); }
+  .arrow { font-size: 10px; }
+
+  .spark-wrap { margin-top: 12px; position: relative; }
+  .spark-svg { width: 100%; height: 56px; display: block; }
+
+  .kpi-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .stat { text-align: left; }
+  .stat-label { font-size: 10px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+  .stat-value { font-size: 13px; color: var(--text); font-weight: 600; margin-top: 3px; font-variant-numeric: tabular-nums; }
+  .stat-sub { font-size: 10px; color: var(--text-dim); margin-top: 1px; }
+
+  /* Detail modal */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(8, 11, 20, 0.78);
+    backdrop-filter: blur(14px);
+    z-index: 50;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: linear-gradient(180deg, #1c2233, #131826);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    width: 100%; max-width: 920px;
+    max-height: 90vh; overflow-y: auto;
+    padding: 28px;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 18px; right: 18px;
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--bg-elev-2); color: var(--text-dim);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px;
+  }
+  .modal-close:hover { color: var(--text); border-color: var(--shine-dim); }
+
+  .modal-head .kpi-name { font-size: 16px; max-width: 90%; }
+  .modal-head .kpi-value { font-size: 40px; }
+  .modal-chart { height: 280px; margin-top: 18px; }
+  .modal-stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px; margin-top: 22px;
+  }
+  .stat-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .stat-card .stat-label { font-size: 11px; }
+  .stat-card .stat-value { font-size: 18px; margin-top: 6px; }
+  .stat-card .stat-sub { font-size: 11px; margin-top: 4px; color: var(--text-dim); }
+
+  /* Range pills */
+  .range-bar {
+    display: inline-flex; background: var(--bg-elev-2); border-radius: 12px; padding: 4px;
+    margin-top: 14px; gap: 2px;
+  }
+  .range-pill {
+    border: none; background: transparent; color: var(--text-dim);
+    font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 9px; cursor: pointer;
+  }
+  .range-pill.active { background: var(--shine); color: #1a1208; }
+
+  /* Footer */
+  footer {
+    margin-top: 56px;
+    padding: 28px 0 8px;
+    border-top: 1px solid var(--border);
+    display: flex; flex-direction: column; align-items: center; gap: 14px;
+    text-align: center;
+  }
+  footer .confidential {
+    color: var(--text-dim); font-size: 12px; font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  footer .confidential b { color: var(--text); font-weight: 600; }
+  footer .footer-logo { width: 200px; height: auto; opacity: 0.92; }
+  footer .footer-fineprint { color: var(--text-faint); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* Empty/null indicator */
+  .nodata { color: var(--text-faint); font-style: italic; font-size: 12px; }
+
+  @media (max-width: 640px) {
+    .hero { padding: 18px; }
+    .hero h1 { font-size: 22px; }
+    .grid { grid-template-columns: 1fr; }
+    .container { padding: 18px 14px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="brand">
+    <div class="brand-mark">
+      <div class="logo">M</div>
+      <div>
+        <div class="brand-title">Membershine <span style="color: var(--shine)">·</span> KPI Insights</div>
+        <div class="brand-sub">Weekly performance pulse</div>
+      </div>
+    </div>
+    <div class="meta">
+      <div>Week of <b id="last-updated">—</b></div>
+      <div id="kpi-total">— KPIs tracked</div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <h1>This week, <span class="shine">shine</span> the spotlight on what matters.</h1>
+      <p>Pick a department to see every KPI's trajectory — highs, lows, and the 4-week pulse.</p>
+    </div>
+    <div class="dept-control">
+      <label class="dept-label" for="dept">Department</label>
+      <select class="dept-select" id="dept"></select>
+    </div>
+  </section>
+
+  <div class="dept-summary">
+    <div class="dept-name" id="dept-name">—</div>
+    <div class="dept-count" id="dept-count">—</div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    <svg class="footer-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 180" role="img" aria-label="1 to 100 Advisors Inc">
+      <defs>
+        <linearGradient id="bars-pd" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f4f6f8"/>
+          <stop offset="1" stop-color="#7d8794"/>
+        </linearGradient>
+      </defs>
+      <g transform="translate(10, 30)">
+        <g stroke="#ffffff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M 70 13 A 48 48 0 1 1 50 13"/>
+          <path d="M 50 13 L 44 9 M 50 13 L 50 21"/>
+        </g>
+        <g fill="url(#bars-pd)">
+          <rect x="34" y="72" width="11" height="22" rx="1"/>
+          <rect x="48" y="62" width="11" height="32" rx="1"/>
+          <rect x="62" y="50" width="11" height="44" rx="1"/>
+          <rect x="76" y="38" width="11" height="56" rx="1"/>
+        </g>
+        <g stroke="#3b95ee" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M 28 82 Q 50 70 86 32"/>
+          <path d="M 86 32 L 74 32 M 86 32 L 86 44"/>
+        </g>
+      </g>
+      <g font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Helvetica, Arial, sans-serif">
+        <text x="160" y="92" font-size="68" font-weight="300" letter-spacing="2" fill="#ffffff">1 TO 100</text>
+        <text x="160" y="135" font-size="24" font-weight="400" letter-spacing="8" fill="#b8c0cc">ADVISORS INC</text>
+      </g>
+    </svg>
+    <div class="confidential"><b>Confidential</b> CEO Operating System by 1 to 100 Advisors, Inc.</div>
+    <div class="footer-fineprint">Membershine KPI Dashboard · Weekly Insights</div>
+  </footer>
+</div>
+
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" id="modal">
+    <button class="modal-close" id="modal-close" aria-label="Close">×</button>
+    <div class="modal-head">
+      <div class="kpi-format-tag" id="m-dept">DEPARTMENT</div>
+      <div class="kpi-name" id="m-name" style="margin-top: 6px">KPI</div>
+      <div class="kpi-value" id="m-value">—</div>
+      <div id="m-change-wrap"></div>
+      <div class="range-bar" id="range-bar">
+        <button class="range-pill" data-range="12">3M</button>
+        <button class="range-pill" data-range="26">6M</button>
+        <button class="range-pill active" data-range="52">1Y</button>
+        <button class="range-pill" data-range="999">ALL</button>
+      </div>
+    </div>
+    <div class="modal-chart">
+      <svg id="m-chart" viewBox="0 0 900 280" preserveAspectRatio="none" style="width:100%;height:100%"></svg>
+    </div>
+    <div class="modal-stats" id="m-stats"></div>
+  </div>
+</div>
+
+<script>
+const DATA = {"dates": ["2024-07-08", "2024-07-15", "2024-07-22", "2024-07-29", "2024-08-05", "2024-08-12", "2024-08-19", "2024-08-26", "2024-09-02", "2024-09-09", "2024-09-16", "2024-09-23", "2024-09-30", "2024-10-07", "2024-10-14", "2024-10-21", "2024-10-28", "2024-11-04", "2024-11-11", "2024-11-18", "2024-11-25", "2024-12-02", "2024-12-09", "2024-12-16", "2024-12-23", "2024-12-30", "2025-01-06", "2025-01-13", "2025-01-20", "2025-01-27", "2025-02-03", "2025-02-10", "2025-02-17", "2025-02-24", "2025-03-03", "2025-03-10", "2025-03-17", "2025-03-24", "2025-03-31", "2025-04-07", "2025-04-14", "2025-04-21", "2025-04-28", "2025-05-05", "2025-05-12", "2025-05-19", "2025-05-26", "2025-06-02", "2025-06-09", "2025-06-16", "2025-06-23", "2025-06-30", "2025-07-07", "2025-07-14", "2025-07-21", "2025-07-28", "2025-08-04", "2025-08-11", "2025-08-18", "2025-08-25", "2025-09-01", "2025-09-08", "2025-09-15", "2025-09-22", "2025-09-29", "2025-10-06", "2025-10-13", "2025-10-20", "2025-10-27", "2025-11-03", "2025-11-10", "2025-11-17", "2025-11-24", "2025-12-01", "2025-12-08", "2025-12-15", "2025-12-22", "2025-12-29", "2026-01-05", "2026-01-12", "2026-01-19", "2026-01-26", "2026-02-02", "2026-02-09", "2026-02-16", "2026-02-23", "2026-03-02", "2026-03-09", "2026-03-16", "2026-03-23", "2026-03-30", "2026-04-06", "2026-04-13", "2026-04-20", "2026-04-27", "2026-05-04", "2026-05-11"], "departments": {"Operations": [{"kpi": "ARR", "values": [null, null, 868726.0, 889525.0, 897916.0, 911823.0, 917143.0, 935145.0, 928490.0, 940004.0, 953209.0, 961409.0, 967489.0, 972422.0, 980332.0, 991438.0, 1011512.0, 1019642.0, 1019597.0, 1037751.0, 1051173.0, 1053189.0, 1060857.0, 1070862.0, 1082482.0, 1095281.0, 1104289.0, 1106239.0, 1109719.0, 1104841.0, 1103327.0, 1107007.0, 1117909.0, 1113195.0, 1140033.0, 1145513.0, 1157680.0, 1171696.0, 1182778.0, 1195006.0, 1198648.0, 1204758.0, 1216032.0, 1223082.0, 1234189.0, 1246855.0, 1255249.0, 1260631.0, 1275154.0, 1292794.0, 1305250.0, 1332120.0, 1348518.0, 1351758.0, 1363992.0, 1357623.0, 1368033.0, 1364503.0, 1380721.0, 1384155.0, 1404835.0, 1412935.0, 1418106.0, 1428292.0, 1446094.0, 1453278.0, 1452442.0, 1464772.0, 1468246.0, 1491579.0, 1487042.0, 1495122.0, 1519723.0, 1529183.0, 1529271.0, 1534107.0, 1541718.0, 1547078.0, 1569716.0, 1545737.0, 1556139.0, 1554786.0, 1567284.0, 1569186.0, 1578983.0, 1592538.0, 1604153.0, 1605599.0, 1622557.0, 1635745.0, 1644075.0, 1665559.0, 1677007.0, 1685259.0, 1698787.0, 1701547.0, 1698199.0], "format": "currency"}, {"kpi": "Customer Count", "values": [null, null, 642.0, 649.0, 654.0, 660.0, 664.0, 675.0, 671.0, 676.0, 682.0, 687.0, 690.0, 694.0, 697.0, 702.0, 707.0, 712.0, 711.0, 720.0, 723.0, 724.0, 732.0, 734.0, 741.0, 744.0, 746.0, 747.0, 749.0, 753.0, 753.0, 755.0, 761.0, 758.0, 773.0, 775.0, 780.0, 786.0, 793.0, 797.0, 800.0, 800.0, 805.0, 808.0, 813.0, 817.0, 818.0, 820.0, 824.0, 827.0, 834.0, 837.0, 839.0, 841.0, 847.0, 845.0, 848.0, 842.0, 851.0, 851.0, 858.0, 861.0, 865.0, 869.0, 877.0, 884.0, 880.0, 884.0, 886.0, 901.0, 897.0, 901.0, 907.0, 912.0, 911.0, 916.0, 921.0, 924.0, 934.0, 919.0, 923.0, 925.0, 936.0, 939.0, 946.0, 953.0, 958.0, 961.0, 969.0, 974.0, 978.0, 979.0, 985.0, 989.0, 995.0, 999.0, 1001.0], "format": "number"}], "Marketing": [{"kpi": "Inbound Leads", "values": [31.0, 42.0, 28.0, 28.0, 30.0, 35.0, 39.0, 38.0, 50.0, 52.0, 41.0, 41.0, 37.0, 28.0, 32.0, 43.0, 37.0, 40.0, 37.0, 41.0, 45.0, 25.0, 40.0, 37.0, 32.0, 18.0, 38.0, 51.0, 49.0, 43.0, 48.0, 55.0, 47.0, 44.0, 43.0, 37.0, 42.0, 37.0, 41.0, 37.0, 35.0, 50.0, 27.0, 38.0, 39.0, 32.0, 29.0, 36.0, 30.0, 46.0, 40.0, 49.0, 33.0, 29.0, 37.0, 38.0, 29.0, 40.0, 41.0, 44.0, 35.0, 36.0, 30.0, 37.0, 29.0, 43.0, 40.0, 50.0, 48.0, 31.0, 34.0, 54.0, 46.0, 24.0, 36.0, 47.0, 39.0, 20.0, 27.0, 48.0, 56.0, 47.0, 51.0, 70.0, 172.0, 64.0, 49.0, 51.0, 41.0, 53.0, 48.0, 37.0, 63.0, 52.0, 47.0, 36.0, 51.0], "format": "number"}, {"kpi": "Outbound Leads", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 0.0, 0.0, 4.0, 3.0, 2.0, 3.0, 3.0, 1.0, 3.0, 2.0, 2.0, 4.0, 0.0, 0.0, 2.0, 1.0, 0.0, 1.0, null], "format": "number"}, {"kpi": "New Demos Scheduled", "values": [14.0, 17.0, 16.0, 19.0, 21.0, 14.0, 17.0, null, 6.0, 8.0, 8.0, 16.0, 17.0, null, 19.0, 20.0, 27.0, 34.0, 33.0, 37.0, 7.0, 8.0, 8.0, 9.0, 9.0, 2.0, 18.0, 36.0, null, 44.0, 32.0, 29.0, 31.0, 31.0, 29.0, 26.0, 21.0, 20.0, 18.0, 18.0, 18.0, 28.0, 14.0, 23.0, 19.0, 11.0, 16.0, 15.0, 16.0, 22.0, 22.0, 26.0, 12.0, 13.0, 21.0, 21.0, 23.0, 18.0, 21.0, 19.0, 18.0, 24.0, 24.0, 22.0, 20.0, 18.0, 18.0, 32.0, 32.0, 17.0, 22.0, 22.0, 30.0, 16.0, 12.0, 22.0, 25.0, 14.0, 12.0, 24.0, 23.0, 26.0, 29.0, 23.0, 21.0, 28.0, 30.0, 24.0, 22.0, 20.0, 28.0, 20.0, 32.0, 25.0, 29.0, 15.0, 21.0], "format": "number"}, {"kpi": "New Demos Completed", "values": [12.0, 24.0, 23.0, 12.0, 21.0, 18.0, 19.0, 18.0, 18.0, 18.0, 28.0, 22.0, 15.0, 19.0, 17.0, 20.0, 18.0, 21.0, 21.0, 23.0, 17.0, 9.0, 25.0, 19.0, 18.0, 2.0, 11.0, 26.0, null, 23.0, 25.0, 26.0, 28.0, 26.0, 25.0, 26.0, 17.0, 15.0, 15.0, 13.0, 13.0, 22.0, 13.0, 18.0, 23.0, 8.0, 13.0, 11.0, 16.0, 19.0, 15.0, 27.0, 4.0, 11.0, 16.0, 16.0, 18.0, 20.0, 19.0, 15.0, 15.0, 13.0, 24.0, 16.0, 12.0, 12.0, 17.0, 20.0, 24.0, 17.0, 23.0, 25.0, 20.0, 15.0, 12.0, 14.0, 24.0, 10.0, 11.0, 20.0, 30.0, 20.0, null, 27.0, 18.0, 23.0, 22.0, 24.0, 23.0, 13.0, 25.0, 21.0, 22.0, 22.0, 22.0, 22.0, 14.0], "format": "number"}, {"kpi": "2nd+ Demos Completed", "values": [0.0, 4.0, 2.0, 3.0, 6.0, 6.0, 3.0, 1.0, 0.0, 4.0, 3.0, 6.0, 2.0, 1.0, 1.0, 2.0, 1.0, 2.0, 2.0, 3.0, null, null, null, null, null, null, null, 2.0, null, 2.0, 2.0, 4.0, 3.0, 3.0, 5.0, 4.0, 6.0, 5.0, 1.0, 2.0, 2.0, 1.0, 1.0, 1.0, 3.0, 1.0, 0.0, 1.0, 4.0, 0.0, 2.0, 1.0, 0.0, 1.0, 1.0, 1.0, 3.0, 4.0, 1.0, 4.0, 1.0, 2.0, 3.0, 4.0, 1.0, 6.0, 1.0, 1.0, 4.0, 2.0, 5.0, 4.0, 2.0, 1.0, 2.0, 2.0, 3.0, 1.0, 0.0, 2.0, 4.0, 2.0, 6.0, 1.0, 4.0, 3.0, 1.0, 2.0, 1.0, 3.0, 1.0, 2.0, 3.0, 6.0, 5.0, 2.0, 1.0], "format": "number"}, {"kpi": "Bookkeeping Svcs Demos Scheduled", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 4.0, 2.0, 4.0, 2.0], "format": "number"}, {"kpi": "Bookkeeping Svcs Demos Completed", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 4.0, 1.0, 3.0, 1.0], "format": "number"}], "Sales": [{"kpi": "All Pipeline - # Late Stage(verbal)", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 12.0, 17.0, 17.0, 24.0, 32.0, 26.0, 20.0, 14.0, 17.0, 19.0, 22.0, 16.0, 13.0, 11.0, 10.0, 14.0, 14.0, 16.0, 19.0, 16.0, 14.0, 15.0, 14.0, 8.0, 15.0, 11.0, 11.0, 16.0, 11.0, 9.0, 12.0], "format": "number"}, {"kpi": "All Pipeline - $ACV Late Stage(verbal)", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 23340.0, 32971.0, 33905.0, 46416.0, 73794.0, 56578.0, 39362.0, 27762.0, 26164.0, 32946.0, 40240.0, 32031.0, 24470.0, 22290.0, 20480.0, 24170.0, 24170.0, 30942.0, 36218.0, 22607.0, 21800.0, 22986.0, 25058.0, 16109.0, 47555.0, 31356.0, 33166.0, 34402.0, 25902.0, 22152.0, 31023.0], "format": "currency"}, {"kpi": "Open Pipeline ACV - TOTAL", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 318560.0, 367100.0, 465570.0, 468260.0, 440450.0, 412215.0, 383980.0, 368410.0, 354970.0, 328430.0, 329340.0, 342780.0, 323590.0, 371270.0, 368990.0, 329690.0, 398648.0, 418470.0, 406840.0, 393010.0, 406870.0, 430030.0, 440450.0, 405790.0, 361950.0, 355960.0, 354740.0, 356670.0, 366240.0, 328060.0, 339760.0], "format": "currency"}, {"kpi": "Open Pipeline Door Count - TOTAL", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 34600.0, 55890.0, 302590.0, 51980.0, 321610.0, 325655.0, 329700.0, 333730.0, 341920.0, 345890.0, 347370.0, 343550.0, 347250.0, 365720.0, 369040.0, 380710.0, 386723.0, 391250.0, 397130.0, 403080.0, 409530.0, 421630.0, 427470.0, 430400.0, 434860.0, 438250.0, 439830.0, 442100.0, 445370.0, 447840.0, 454260.0], "format": "number"}, {"kpi": "Active WORKING Deals(Proposal Sent+)", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 121.0, 119.0, 114.0, 106.0, 112.0, 112.0, 106.0, 105.0, 102.0, 106.0], "format": "number"}, {"kpi": "Total Pipeline # of Deals", "values": [80.0, 82.0, 97.0, 92.0, 86.0, 81.0, 77.0, 83.0, 84.0, 92.0, 100.0, 116.0, 117.0, 122.0, 127.0, 132.0, 126.0, 135.0, 137.0, 130.0, 134.0, 195.0, 219.0, 221.0, null, null, null, null, 234.0, 231.0, null, 222.0, 220.0, 203.0, 190.0, 205.0, 197.0, 192.0, 193.0, null, 179.0, 186.0, 180.0, 179.0, 185.0, 180.0, 181.0, 171.0, 176.0, 177.0, 177.0, 191.0, 184.0, 185.0, 188.0, 191.0, 202.0, null, 212.0, 214.0, 227.0, null, 198.0, 187.0, 180.0, 114.0, 148.0, 233.0, 228.0, 158.0, 243.0, 243.0, 243.0, 259.0, 273.0, 277.0, 296.0, 282.0, 248.0, 267.0, 292.0, 286.0, 307.0, 325.0, 320.0, 338.0, 354.0, 365.0, 369.0, 380.0, 396.0, 389.0, 374.0, 384.0, 369.0, 365.0, 373.0], "format": "number"}, {"kpi": "ACV Created - Rolling 365", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 1760000.0, 1790000.0, 1800000.0, 1860000.0, 1880000.0, 1900000.0, 1960000.0, 2010000.0, 1860000.0, 1895000.0, 1930000.0, 1880000.0, 1880000.0, 1940000.0, 1970000.0, 1980000.0, 2010000.0, 2020000.0, 2010000.0, 2030000.0, 2050000.0, 2110000.0, 2100000.0, 2111000.0], "format": "currency"}, {"kpi": "Deal Created - Rolling 365", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 921.0, 943.0, 946.0, 959.0, 962.0, 997.0, 999.0, 994.0, 1000.0, 997.0, 996.0, 999.0], "format": "number"}, {"kpi": "Open Pipeline $", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 255470.0, 218200.0, 235300.0, 211985.0, 188670.0, 279440.0, 241460.0, 203080.0, 192910.0, 204440.0, 173040.0, 215080.0, 220560.0, 226040.0, 277550.0, 329060.0, 298690.0, 306050.0, 351030.0, 381660.0, 389690.0, 373410.0, 375610.0, 379370.0, 358280.0, 351777.0, 375580.0, 353700.0, 271691.0], "format": "currency"}, {"kpi": "Open Pipeline Door Count", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 29360.0, 35610.0, 40270.0, 40455.0, 40640.0, 50520.0, 51340.0, 51030.0, 48060.0, 43730.0, 45360.0, 61930.0, 64435.0, 66940.0, 65750.0, 64560.0, 68890.0, 71560.0, 74870.0, 83200.0, 81300.0, 81060.0, 84350.0, 75910.0, 67270.0, 62830.0, 58100.0, 54360.0, null], "format": "number"}, {"kpi": "Active Pipeline Count", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 112.0, 98.0, 108.0, 100.5, 93.0, 141.0, 160.0, 152.0, 164.0, 149.0, 121.0, 137.0, 143.0, 148.0, 157.0, 168.0, 157.0, 170.0, 172.0, 177.0, 175.0, 164.0, 194.0, 186.0, 164.0, 161.0, 146.0, 137.0, 143.0], "format": "number"}, {"kpi": "ACV Created Rolling 90 Days", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 501170.0, 453210.0, 416800.0, 413100.0, 428480.0, 421310.0, 445310.0, 447610.0, 449910.0, 484610.0, 519310.0, 498230.0, 516060.0, 566490.0, 605680.0, 611410.0, 621150.0, 642200.0, 663790.0, 650300.0, 640800.0, 660320.0, 643020.0, 648657.0], "format": "currency"}, {"kpi": "# Deals Created", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 261.0, 274.0, 275.0, 292.0, 282.0, 259.0, 270.0, 280.0, 287.0, 296.0, 305.0, 299.0, 303.0, 318.0, 331.0, 331.0, 322.0, 362.0, 367.0, 344.0, 335.0, 315.0, 304.0, 303.0], "format": "number"}, {"kpi": "# Deals - Closed", "values": [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 78.0, 75.0, 75.0, 80.0, 74.0, 77.0, 76.0, 79.0, 82.0, 82.0, 83.0, 87.0, 81.0, 87.0, 89.0, 94.0, 91.0, 94.0, 99.0, 99.0, 101.0, 102.0, 98.0, 223.0], "format": "number"}, {"kpi": "Won(HS Pipeline)", "values": [302.0, 307.0, 320.0, 330.0, 335.0, 341.0, 345.0, 354.0, 354.0, 363.0, 365.0, 376.0, 381.0, 385.0, 393.0, 402.0, 410.0, 411.0, 415.0, 416.0, 429.0, 430.0, 438.0, 445.0, 455.0, 463.0, 466.0, 471.0, 471.0, 477.0, 482.0, 489.0, 494.0, 496.0, 512.0, 515.0, 523.0, 531.0, 543.0, 548.0, 553.0, 559.0, 565.0, 571.0, 578.0, 585.0, 589.0, 595.0, 600.0, 609.0, 615.0, 619.0, 622.0, 625.0, 629.0, 631.0, 636.0, null, 650.0, 653.0, 659.0, null, null, 674.0, 679.0, 684.0, 684.0, 697.0, 701.0, 713.0, 715.0, 742.0, 753.0, 735.0, 731.0, 736.0, 737.0, 740.0, 747.0, 749.0, 755.0, 761.0, 770.0, 778.0, 785.0, 793.0, 802.0, 813.0, 821.0, 826.0, 832.0, 845.0, 850.0, 855.0, 867.0, 870.0, 873.0], "format": "number"}, {"kpi": "Lost(HS Pipeline)", "values": [242.0, 244.0, 245.0, 250.0, 258.0, 278.0, 287.0, 289.0, 366.0, 369.0, 374.0, 382.0, 385.0, 299.0, 402.0, 408.0, 414.0, 422.0, 426.0, 448.0, 453.0, 463.0, 471.0, 494.0, 511.0, 511.0, 521.0, 537.0, 553.0, 561.0, 573.0, 602.0, 620.0, 653.0, 665.0, 668.0, 680.0, 687.0, 704.0, null, 722.0, 728.0, 735.0, 746.0, 752.0, 758.0, 764.0, 778.0, 780.0, 780.0, 785.0, 791.0, 799.0, 805.0, 811.0, 821.0, 828.0, null, 835.0, 840.0, 846.0, null, null, 912.0, 921.0, 925.0, 925.0, 952.0, 958.0, 969.0, 971.0, 988.0, 1002.0, 1015.0, 1024.0, 1039.0, 1052.0, 1056.0, 1061.0, 1065.0, 1078.0, 1091.0, 1097.0, 1104.0, 1112.0, 1119.0, 1129.0, 1134.0, 1143.0, 1152.0, 1173.0, 1187.0, 1198.0, 1207.0, 1216.0, 1233.0, 1241.0], "format": "number"}, {"kpi": "New Sales Count", "values": [6.0, 6.0, 5.0, 10.0, 7.0, 9.0, 3.0, 8.0, 1.0, 6.0, 6.0, 12.0, 7.0, 4.0, 7.0, 6.0, 8.0, 7.0, 5.0, 1.0, 13.0, 1.0, 8.0, 5.0, 12.0, 7.0, 0.0, 4.0, 3.0, 8.0, 4.0, 5.0, 6.0, 3.0, 16.0, 4.0, 7.0, 6.0, 11.0, 5.0, 3.0, 5.0, 5.0, 6.0, 7.0, 7.0, 4.0, 6.0, 4.0, 8.0, 13.0, 10.0, 3.0, 3.0, 7.0, 4.0, 4.0, 6.0, 10.0, 4.0, 7.0, 5.0, null, 5.0, 8.0, 7.0, 2.0, 4.0, 2.0, 16.0, 1.0, 5.0, 11.0, 7.0, 5.0, 5.0, 7.0, 3.0, 11.0, 1.0, 7.0, 6.0, 13.0, 4.0, 7.0, 8.0, 10.0, 8.0, 9.0, 5.0, 7.0, 14.0, 6.0, 5.0, 9.0, 5.0, 2.0], "format": "number"}, {"kpi": "New Sales First Invoice ARR", "values": [11208.0, 8598.0, 9174.0, 13145.0, 15189.0, 16546.0, 4920.0, 17052.0, 1680.0, 10674.0, 10863.0, 16468.0, 9468.0, 5508.0, 13420.0, 10380.0, 23338.0, 7918.0, 7788.0, 1944.0, 32072.0, 2016.0, 11892.0, 7776.0, 13183.0, 18204.0, 0.0, 5736.0, 4296.0, 14170.0, 5100.0, 10308.0, 8892.0, 3724.0, 28884.0, 7128.0, 13536.0, 14352.0, 14796.0, 12690.0, 5187.0, 10464.0, 9354.0, 10775.0, 13093.0, 13854.0, 12086.0, 11076.0, 13803.0, 23700.0, 13140.0, 10710.0, 17328.0, 4296.0, 12610.0, 5100.0, 8532.0, 12996.0, 17598.0, 7656.0, 19145.0, 9600.0, null, 9361.0, 17502.0, 7184.0, 4920.0, 12330.0, 6390.0, 25261.0, 3600.0, 7836.0, 23796.0, 10970.0, 8780.0, 5192.0, 10367.0, 4467.0, 21758.0, 2160.0, 18716.0, 5927.0, 16982.0, 3238.0, 10186.0, 17995.0, 18931.0, 8766.0, 15476.0, 11783.0, 11585.0, 21493.0, 4677.0, 9450.0, 16177.0, 7214.0, 1668.0], "format": "currency"}, {"kpi": "Avg ACV", "values": [1868.0, 1433.0, 1835.0, 1315.0, 2170.0, 1838.0, 1640.0, 2132.0, 1680.0, 1779.0, 1811.0, 1372.0, 1353.0, 1377.0, 1753.0, 1838.0, 2340.0, 1550.0, 1550.0, 1329.0, 2174.0, 2167.0, 1529.0, 1753.0, 1509.0, 1755.0, 0.0, 1515.0, 1390.0, 1710.0, 1619.0, 2280.0, 1856.0, 1856.0, 1875.0, 1932.0, 1959.0, 2030.0, 1786.0, 2538.0, 2247.0, 2223.0, 2014.0, 1930.0, 2111.0, 2245.0, 2474.0, 2209.0, 3656.0, 3013.0, 2718.0, 2578.0, 3024.0, 1432.0, 2974.0, 1622.0, 1900.0, 2166.0, 1759.0, 2832.0, 4225.0, 2400.0, null, 1872.0, 2570.0, 1198.0, 2460.0, 3083.0, 3195.0, 1579.0, 3600.0, 4685.0, 2163.0, 3571.0, 2056.0, 1190.0, 1867.0, 1689.0, 2087.0, 2160.0, 2674.0, 1277.0, 1427.0, 2159.0, 1455.0, 2924.0, 2279.0, 1261.0, 1831.0, 3023.0, 1903.0, 2579.0, 1588.0, 3488.0, 3375.0, 1973.0, 834.0], "format": "currency"}], "Onboarding": [{"kpi": "Go Live Customer Count", "values": [1.0, 1.0, 0.0, 1.0, 1.0, 2.0, 4.0, 1.0, 3.0, 2.0, 4.0, 7.0, 4.0, 3.0, 2.0, 5.0, 12.0, 5.0, 7.0, 3.0, 7.0, 3.0, 5.0, 3.0, 18.0, 5.0, 7.0, 21.0, 3.0, 9.0, 3.0, 9.0, 6.0, 4.0, 3.0, 6.0, 5.0, 3.0, 6.0, 3.0, 1.0, 5.0, 6.0, 3.0, 3.0, 8.0, 4.0, 6.0, 3.0, 6.0, 2.0, 9.0, 0.0, 3.0, 2.0, 8.0, 1.0, 2.0, 1.0, 0.0, 2.0, 2.0, 4.0, 5.0, 4.0, 0.0, 1.0, 2.0, 1.0, 12.0, 3.0, 5.0, 1.0, 1.0, 1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 0.0, 17.0, 9.0, 6.0, 8.0, 3.0, 3.0, 1.0, 11.0, 3.0, 4.0, 1.0, 7.0, 1.0, 4.0, 2.0, 6.0], "format": "number"}, {"kpi": "0-30 Days in Onboarding", "values": [26.0, 25.0, 23.0, 18.0, 16.0, 26.0, 26.0, 22.0, 26.0, 21.0, 19.0, 16.0, 13.0, 16.0, 16.0, 18.0, 19.0, 15.0, 17.0, 17.0, 12.0, 13.0, 15.0, 16.0, 20.0, 20.0, 17.0, 19.0, 18.0, 16.0, 20.0, 20.0, 17.0, 17.0, 18.0, 16.0, 17.0, 15.0, 19.0, 22.0, 21.0, 30.0, 29.0, 27.0, 23.0, 15.0, 10.0, 8.0, 10.0, 10.0, 11.0, 16.0, 17.0, 14.0, 16.0, 15.0, 12.0, 15.0, 15.0, 9.0, 13.0, 10.0, 13.0, 16.0, 12.0, 11.0, 11.0, 8.0, 7.0, 10.0, 11.0, 12.0, 18.0, 16.0, 20.0, 21.0, 17.0, 12.0, 7.0, 1.0, 10.0, 19.0, 24.0, 20.0, 29.0, 26.0, 25.0, 29.0, 30.0, 28.0, 23.0, 24.0, 18.0, 20.0, 19.0, 16.0, 14.0], "format": "number"}, {"kpi": "31-60 Days in Onboarding", "values": [14.0, 17.0, 16.0, 21.0, 24.0, 23.0, 23.0, 21.0, 25.0, 28.0, 27.0, 31.0, 28.0, 20.0, 20.0, 21.0, 19.0, 21.0, 17.0, 17.0, 15.0, 13.0, 12.0, 11.0, 10.0, 9.0, 13.0, 13.0, 19.0, 17.0, 10.0, 11.0, 12.0, 13.0, 14.0, 14.0, 15.0, 17.0, 15.0, 13.0, 15.0, 11.0, 15.0, 16.0, 18.0, 21.0, 22.0, 20.0, 15.0, 14.0, 11.0, 5.0, 6.0, 9.0, 9.0, 12.0, 12.0, 11.0, 11.0, 14.0, 10.0, 13.0, 13.0, 10.0, 13.0, 11.0, 13.0, 15.0, 10.0, 9.0, 8.0, 8.0, 7.0, 10.0, 12.0, 13.0, 16.0, 19.0, 18.0, 22.0, 18.0, 19.0, 20.0, 11.0, 11.0, 19.0, 19.0, 21.0, 24.0, 26.0, 27.0, 26.0, 29.0, 28.0, 27.0, 23.0, 20.0], "format": "number"}, {"kpi": "61-90 Days in Onboarding", "values": [19.0, 13.0, 15.0, 14.0, 12.0, 16.0, 12.0, 18.0, 24.0, 22.0, 22.0, 18.0, 21.0, 25.0, 26.0, 26.0, 28.0, 20.0, 19.0, 19.0, 21.0, 19.0, 20.0, 15.0, 10.0, 8.0, 8.0, 8.0, 7.0, 5.0, 6.0, 9.0, 10.0, 9.0, 10.0, 10.0, 9.0, 8.0, 9.0, 11.0, 13.0, 13.0, 11.0, 13.0, 12.0, 14.0, 14.0, 12.0, 12.0, 10.0, 10.0, 15.0, 15.0, 12.0, 8.0, 4.0, 6.0, 9.0, 8.0, 11.0, 12.0, 10.0, 10.0, 11.0, 10.0, 12.0, 11.0, 9.0, 11.0, 7.0, 8.0, 9.0, 9.0, 8.0, 8.0, 8.0, 7.0, 8.0, 11.0, 11.0, 13.0, 16.0, 18.0, 15.0, 15.0, 13.0, 13.0, 13.0, 11.0, 10.0, 14.0, 16.0, 16.0, 16.0, 16.0, 22.0, 22.0], "format": "number"}, {"kpi": "91+ Days in Onboarding", "values": [17.0, 21.0, 24.0, 27.0, 31.0, 32.0, 35.0, 35.0, 36.0, 74.0, 68.0, 67.0, 70.0, 73.0, 73.0, 71.0, 66.0, 70.0, 72.0, 72.0, 70.0, 74.0, 73.0, 77.0, 69.0, 67.0, 63.0, 48.0, 47.0, 44.0, 44.0, 40.0, 39.0, 41.0, 38.0, 36.0, 32.0, 31.0, 30.0, 28.0, 30.0, 29.0, 30.0, 29.0, 30.0, 28.0, 31.0, 31.0, 35.0, 35.0, 36.0, 31.0, 32.0, 34.0, 37.0, 36.0, 36.0, 34.0, 32.0, 30.0, 31.0, 32.0, 31.0, 32.0, 34.0, 36.0, 37.0, 41.0, 44.0, 38.0, 38.0, 35.0, 37.0, 39.0, 40.0, 44.0, 41.0, 47.0, 45.0, 48.0, 50.0, 77.0, 77.0, 55.0, 55.0, 58.0, 56.0, 56.0, 51.0, 53.0, 49.0, 50.0, 48.0, 48.0, 51.0, 50.0, 49.0], "format": "number"}], "Support": [{"kpi": "Closed Resolved Tickets", "values": [53.0, 79.0, 54.0, 95.0, 46.0, 66.0, 83.0, 67.0, 60.0, 58.0, 70.0, 65.0, 62.0, 58.0, 65.0, 65.0, 103.0, 49.0, 104.0, 82.0, 89.0, 35.0, 63.0, 62.0, 87.0, 47.0, 68.0, 61.0, 102.0, 112.0, 115.0, 89.0, 87.0, 88.0, 58.0, 99.0, 85.0, 110.0, 73.0, 54.0, 54.0, 54.0, 108.0, 76.0, 66.0, 66.0, 63.0, 52.0, 47.0, 64.0, 64.0, 60.0, 52.0, 78.0, 44.0, 55.0, 35.0, 45.0, 51.0, 44.0, 38.0, 38.0, 67.0, 37.0, 43.0, 43.0, 48.0, 48.0, 43.0, 36.0, 40.0, 44.0, 55.0, 39.0, 75.0, 135.0, 49.0, 21.0, 39.0, 60.0, 111.0, 73.0, 71.0, 61.0, 43.0, 73.0, 85.0, 66.0, 56.0, 42.0, 26.0, 42.0, 24.0, 41.0, 32.0, 95.0, 971.0], "format": "number"}, {"kpi": "Open (New) Tickets", "values": [146.0, 227.0, 148.0, 217.0, 149.0, 152.0, 118.0, 88.0, 93.0, 70.0, 80.0, 63.0, 72.0, 86.0, 70.0, 70.0, 83.0, 76.0, 74.0, 35.0, 75.0, 40.0, 104.0, 65.0, 67.0, 39.0, 71.0, 55.0, 18.0, 124.0, 97.0, 95.0, 96.0, 92.0, 98.0, 96.0, 83.0, 78.0, 69.0, 67.0, 73.0, 73.0, 64.0, 71.0, 74.0, 74.0, 68.0, 80.0, 67.0, 56.0, 56.0, 68.0, 59.0, 56.0, 64.0, 51.0, 86.0, 67.0, 53.0, 46.0, 62.0, 62.0, 68.0, 70.0, 66.0, 66.0, 71.0, 71.0, 74.0, 77.0, 33.0, 60.0, 58.0, 44.0, 72.0, 82.0, 73.0, 46.0, 86.0, 126.0, 113.0, 69.0, 92.0, 93.0, 72.0, 88.0, 80.0, 74.0, 73.0, 81.0, 54.0, 73.0, 71.0, 83.0, 56.0, 69.0, 59.0], "format": "number"}, {"kpi": "Open (Existing) Tickets", "values": [null, null, null, null, null, null, 31.0, 24.0, 43.0, 35.0, 29.0, 32.0, 39.0, 34.0, 39.0, 39.0, 42.0, 44.0, 35.0, 46.0, 37.0, 28.0, 36.0, 33.0, 40.0, 13.0, 18.0, 58.0, 33.0, 43.0, 45.0, 55.0, 40.0, 32.0, 41.0, 53.0, 38.0, 39.0, 24.0, 33.0, 37.0, 37.0, 37.0, 35.0, 39.0, 39.0, 25.0, 54.0, 31.0, 45.0, 45.0, 42.0, 37.0, 36.0, 26.0, 41.0, 38.0, 37.0, 39.0, 38.0, 27.0, 27.0, 13.0, 27.0, 25.0, 25.0, 42.0, 42.0, 33.0, 29.0, 35.0, 30.0, 28.0, 31.0, 34.0, 45.0, 46.0, 37.0, 36.0, 71.0, 61.0, 71.0, 94.0, 54.0, 46.0, 41.0, 59.0, 46.0, 75.0, 36.0, 46.0, 29.0, 45.0, 55.0, 25.0, 34.0, 98.0], "format": "number"}, {"kpi": "Total Tickets", "values": [null, null, null, null, null, null, null, null, 196.0, 163.0, 186.0, 169.0, 183.0, 189.0, 183.0, 183.0, 244.0, 180.0, 219.0, 174.0, 208.0, 112.0, 211.0, 164.0, 266.0, 106.0, 164.0, 182.0, 274.0, 288.0, 263.0, 243.0, 230.0, 216.0, 205.0, 256.0, 211.0, 233.0, 171.0, 155.0, 169.0, 169.0, 216.0, 183.0, 186.0, 186.0, 161.0, 190.0, 151.0, 171.0, 171.0, 176.0, 153.0, 176.0, 139.0, 155.0, 165.0, 154.0, 146.0, 130.0, 129.0, 129.0, 151.0, 140.0, 136.0, 136.0, 167.0, 167.0, 151.0, 149.0, 110.0, 141.0, 546.0, 83.0, 117.0, 141.0, 122.0, 85.0, 141.0, 204.0, 182.0, 143.0, 188.0, 148.0, 118.0, 133.0, 140.0, 121.0, 150.0, 117.0, 100.0, 102.0, 116.0, 138.0, 81.0, 103.0, 157.0], "format": "number"}], "Customer Success": [{"kpi": "Reviews >5", "values": [null, 2.0, null, 1.0, null, 2.0, 3.0, 1.0, 0.0, 2.0, 1.0, 2.0, 0.0, 1.0, 1.0, 2.0, 3.0, 0.0, 1.0, 2.0, 0.0, 1.0, 1.0, 3.0, 0.0, 0.0, 0.0, 0.0, 4.0, 2.0, 4.0, 2.0, 1.0, 5.0, 1.0, 4.0, 0.0, 0.0, 2.0, 1.0, 0.0, 0.0, 2.0, 5.0, 4.0, 2.0, 0.0, 1.0, 9.0, 3.0, 3.0, 0.0, 0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 2.0, 6.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0], "format": "number"}, {"kpi": "Customers At Risk", "values": [null, null, null, null, 2.0, 2.0, 4.0, 1.0, 3.0, 2.0, 10.0, 3.0, 3.0, 3.0, 3.0, 6.0, 6.0, 6.0, 6.0, 6.0, 6.0, 0.0, 0.0, 0.0, 0.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0, 2.0, 0.0, 0.0, 5.0, 3.0, 0.0, 0.0, 1.0, 1.0, 2.0, 5.0, 6.0, 7.0, 7.0, 7.0, 6.0, 6.0, 6.0, 6.0, 6.0, 5.0, 6.0, 6.0, 10.0, 7.0, 4.0, 4.0, 2.0, 5.0, 4.0, 1.0, 1.0, 0.0, 0.0, 3.0, 0.0, 2.0, 2.0, 1.0, 2.0, 1.0, 7.0, 7.0, 7.0, 7.0, 7.0, 6.0], "format": "number"}]}, "lastUpdated": "2026-05-11"};
+
+// ---------- helpers ----------
+function fmtVal(v, format) {
+  if (v == null || isNaN(v)) return "—";
+  if (format === "currency") {
+    if (Math.abs(v) >= 1_000_000) return "$" + (v/1_000_000).toFixed(2) + "M";
+    if (Math.abs(v) >= 1_000) return "$" + (v/1_000).toFixed(1) + "K";
+    return "$" + Math.round(v).toLocaleString();
+  }
+  if (format === "percent") return (v).toFixed(1) + "%";
+  if (Math.abs(v) >= 1_000_000) return (v/1_000_000).toFixed(2) + "M";
+  if (Math.abs(v) >= 10_000) return (v/1_000).toFixed(1) + "K";
+  return Math.round(v).toLocaleString();
+}
+
+function fmtPct(v) {
+  if (v == null || !isFinite(v)) return "—";
+  const sign = v > 0 ? "+" : "";
+  return sign + v.toFixed(1) + "%";
+}
+
+function fmtDate(d) {
+  if (!d) return "—";
+  const [y,m,da] = d.split("-").map(Number);
+  return new Date(y, m-1, da).toLocaleDateString(undefined, {month: "short", day: "numeric", year: "numeric"});
+}
+
+function fmtShortDate(d) {
+  if (!d) return "";
+  const [y,m,da] = d.split("-").map(Number);
+  return new Date(y, m-1, da).toLocaleDateString(undefined, {month: "short", day: "numeric"});
+}
+
+function lastValid(values) {
+  for (let i = values.length - 1; i >= 0; i--) if (values[i] != null) return {i, v: values[i]};
+  return null;
+}
+
+function prevValid(values, lastIdx) {
+  for (let i = lastIdx - 1; i >= 0; i--) if (values[i] != null) return {i, v: values[i]};
+  return null;
+}
+
+function fourWeekAvg(values, lastIdx) {
+  const slice = values.slice(Math.max(0, lastIdx - 3), lastIdx + 1).filter(v => v != null);
+  if (!slice.length) return null;
+  return slice.reduce((a,b)=>a+b,0) / slice.length;
+}
+
+function highestLowest(values, dates) {
+  let hi = null, lo = null;
+  values.forEach((v, i) => {
+    if (v == null) return;
+    if (hi == null || v > hi.v) hi = {v, i};
+    if (lo == null || v < lo.v) lo = {v, i};
+  });
+  return {hi, lo};
+}
+
+// ---------- sparkline ----------
+function sparkline(values, width = 300, height = 56, accent = "#4f7cff") {
+  const pts = values.map((v, i) => ({v, i})).filter(p => p.v != null);
+  if (pts.length < 2) {
+    return `<svg class="spark-svg" viewBox="0 0 ${width} ${height}"><text x="${width/2}" y="${height/2}" fill="#5b647a" font-size="11" text-anchor="middle" dominant-baseline="middle">insufficient data</text></svg>`;
+  }
+  const min = Math.min(...pts.map(p => p.v));
+  const max = Math.max(...pts.map(p => p.v));
+  const range = max - min || 1;
+  const padY = 6;
+  const xStep = width / (values.length - 1);
+  const points = pts.map(p => {
+    const x = p.i * xStep;
+    const y = height - padY - ((p.v - min) / range) * (height - 2 * padY);
+    return [x, y];
+  });
+  const path = points.map((p, i) => (i === 0 ? `M${p[0]},${p[1]}` : `L${p[0]},${p[1]}`)).join(" ");
+  const areaPath = `${path} L${points[points.length-1][0]},${height} L${points[0][0]},${height} Z`;
+  const gradId = "sg" + Math.random().toString(36).slice(2, 8);
+  return `<svg class="spark-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${accent}" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="${accent}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="${areaPath}" fill="url(#${gradId})"/>
+    <path d="${path}" fill="none" stroke="${accent}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+// ---------- detail chart ----------
+function detailChart(values, dates, accent) {
+  const svg = document.getElementById("m-chart");
+  const W = 900, H = 280, padL = 56, padR = 16, padT = 16, padB = 32;
+  const pts = values.map((v, i) => ({v, i, d: dates[i]})).filter(p => p.v != null);
+  if (pts.length < 2) {
+    svg.innerHTML = `<text x="${W/2}" y="${H/2}" fill="#5b647a" font-size="14" text-anchor="middle">Not enough data to chart</text>`;
+    return;
+  }
+  const min = Math.min(...pts.map(p => p.v));
+  const max = Math.max(...pts.map(p => p.v));
+  const range = max - min || 1;
+  const xStep = (W - padL - padR) / (values.length - 1);
+
+  function px(i) { return padL + i * xStep; }
+  function py(v) { return padT + (H - padT - padB) * (1 - (v - min) / range); }
+
+  const pathPts = pts.map(p => [px(p.i), py(p.v)]);
+  const linePath = pathPts.map((p,i) => (i===0?`M${p[0]},${p[1]}`:`L${p[0]},${p[1]}`)).join(" ");
+  const areaPath = `${linePath} L${pathPts[pathPts.length-1][0]},${H-padB} L${pathPts[0][0]},${H-padB} Z`;
+
+  // 4-week MA line
+  const ma = values.map((v, i) => {
+    const window = values.slice(Math.max(0, i-3), i+1).filter(x => x != null);
+    return window.length ? window.reduce((a,b)=>a+b,0) / window.length : null;
+  });
+  const maPts = ma.map((v, i) => ({v, i})).filter(p => p.v != null);
+  const maPath = maPts.map((p,i)=>(i===0?`M${px(p.i)},${py(p.v)}`:`L${px(p.i)},${py(p.v)}`)).join(" ");
+
+  // Y axis labels (5 ticks)
+  const ticks = 5;
+  let yAxis = "";
+  for (let t = 0; t < ticks; t++) {
+    const v = min + (range * t) / (ticks - 1);
+    const y = py(v);
+    yAxis += `<line x1="${padL}" x2="${W-padR}" y1="${y}" y2="${y}" stroke="rgba(255,255,255,0.05)" stroke-dasharray="3,4"/>`;
+    yAxis += `<text x="${padL - 8}" y="${y+4}" fill="#5b647a" font-size="11" text-anchor="end">${fmtVal(v, currentFmt)}</text>`;
+  }
+
+  // X labels at start, mid, end
+  const xLabels = [0, Math.floor(values.length/2), values.length-1].map(i => {
+    if (!dates[i]) return "";
+    return `<text x="${px(i)}" y="${H-padB+18}" fill="#5b647a" font-size="11" text-anchor="${i===0?'start':i===values.length-1?'end':'middle'}">${fmtShortDate(dates[i])}</text>`;
+  }).join("");
+
+  // High/Low markers
+  let markers = "";
+  const {hi, lo} = highestLowest(values, dates);
+  if (hi) markers += `<circle cx="${px(hi.i)}" cy="${py(hi.v)}" r="4" fill="#30d158" stroke="#0b0f17" stroke-width="2"/>`;
+  if (lo) markers += `<circle cx="${px(lo.i)}" cy="${py(lo.v)}" r="4" fill="#ff453a" stroke="#0b0f17" stroke-width="2"/>`;
+
+  const last = pathPts[pathPts.length-1];
+  markers += `<circle cx="${last[0]}" cy="${last[1]}" r="5" fill="${accent}" stroke="#0b0f17" stroke-width="2"/>`;
+
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="md-grad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${accent}" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="${accent}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    ${yAxis}
+    <path d="${areaPath}" fill="url(#md-grad)"/>
+    <path d="${linePath}" fill="none" stroke="${accent}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="${maPath}" fill="none" stroke="#ffc94a" stroke-width="1.5" stroke-dasharray="4,4" opacity="0.85"/>
+    ${markers}
+    ${xLabels}
+  `;
+}
+
+// ---------- state ----------
+let currentDept = null;
+let currentKpi = null;
+let currentFmt = "number";
+let currentRange = 52;
+
+const deptColors = {
+  "Operations": "#4f7cff",
+  "Marketing":  "#bf5af2",
+  "Sales":      "#30d158",
+  "Onboarding": "#ffc94a",
+  "Support":    "#ff9f0a",
+  "Customer Success": "#64d2ff",
+};
+
+// ---------- rendering ----------
+function renderDeptOptions() {
+  const sel = document.getElementById("dept");
+  const depts = Object.keys(DATA.departments);
+  depts.forEach(d => {
+    const opt = document.createElement("option");
+    opt.value = d; opt.textContent = d;
+    sel.appendChild(opt);
+  });
+  sel.value = depts[0];
+  currentDept = depts[0];
+  sel.addEventListener("change", e => { currentDept = e.target.value; renderGrid(); });
+}
+
+function renderGrid() {
+  const grid = document.getElementById("grid");
+  const kpis = DATA.departments[currentDept] || [];
+  document.getElementById("dept-name").textContent = currentDept;
+  document.getElementById("dept-count").textContent = `${kpis.length} KPI${kpis.length===1?'':'s'}`;
+  const accent = deptColors[currentDept] || "#4f7cff";
+
+  grid.innerHTML = "";
+  kpis.forEach((k, idx) => {
+    const last = lastValid(k.values);
+    if (!last) return;
+    const prev = prevValid(k.values, last.i);
+    const change = prev ? (last.v - prev.v) / Math.abs(prev.v) * 100 : null;
+    const dir = change == null ? "flat" : change > 0.05 ? "up" : change < -0.05 ? "down" : "flat";
+    const arrow = dir === "up" ? "▲" : dir === "down" ? "▼" : "■";
+    const {hi, lo} = highestLowest(k.values, DATA.dates);
+    const ma4 = fourWeekAvg(k.values, last.i);
+
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="card-head">
+        <div class="kpi-name">${k.kpi}</div>
+        <div class="kpi-format-tag">${k.format === "currency" ? "$" : k.format === "percent" ? "%" : "#"}</div>
+      </div>
+      <div class="kpi-value">${fmtVal(last.v, k.format)}</div>
+      <span class="kpi-change ${dir}"><span class="arrow">${arrow}</span> ${change == null ? "—" : fmtPct(change)} <span style="opacity:0.6">wk/wk</span></span>
+      <div class="spark-wrap">${sparkline(k.values, 600, 56, accent)}</div>
+      <div class="kpi-stats">
+        <div class="stat">
+          <div class="stat-label">4-Wk Avg</div>
+          <div class="stat-value">${fmtVal(ma4, k.format)}</div>
+          <div class="stat-sub">trailing window</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Highest</div>
+          <div class="stat-value" style="color:var(--up)">${hi ? fmtVal(hi.v, k.format) : "—"}</div>
+          <div class="stat-sub">${hi ? fmtShortDate(DATA.dates[hi.i]) : "—"}</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Lowest</div>
+          <div class="stat-value" style="color:var(--down)">${lo ? fmtVal(lo.v, k.format) : "—"}</div>
+          <div class="stat-sub">${lo ? fmtShortDate(DATA.dates[lo.i]) : "—"}</div>
+        </div>
+      </div>
+    `;
+    card.addEventListener("click", () => openDetail(k, accent));
+    grid.appendChild(card);
+  });
+
+  if (!kpis.length) {
+    grid.innerHTML = '<div class="nodata" style="grid-column: 1/-1;padding: 24px;text-align:center;">No KPIs for this department.</div>';
+  }
+}
+
+function openDetail(k, accent) {
+  currentKpi = k;
+  currentFmt = k.format;
+  document.getElementById("m-dept").textContent = currentDept.toUpperCase();
+  document.getElementById("m-name").textContent = k.kpi;
+
+  setRange(currentRange);
+  document.getElementById("modal-backdrop").classList.add("open");
+
+  // render stats
+  const last = lastValid(k.values);
+  const prev = prevValid(k.values, last.i);
+  const change = prev ? (last.v - prev.v) / Math.abs(prev.v) * 100 : null;
+  const dir = change == null ? "flat" : change > 0.05 ? "up" : change < -0.05 ? "down" : "flat";
+  const arrow = dir === "up" ? "▲" : dir === "down" ? "▼" : "■";
+
+  document.getElementById("m-value").textContent = fmtVal(last.v, k.format);
+  document.getElementById("m-change-wrap").innerHTML =
+    `<span class="kpi-change ${dir}" style="font-size:14px;margin-top:8px">
+       <span class="arrow">${arrow}</span> ${change == null ? "—" : fmtPct(change)}
+       <span style="opacity:0.7">vs. previous week</span>
+     </span>`;
+
+  const ma4 = fourWeekAvg(k.values, last.i);
+  const {hi, lo} = highestLowest(k.values, DATA.dates);
+  const nonNull = k.values.filter(v => v != null);
+  const overallAvg = nonNull.length ? nonNull.reduce((a,b)=>a+b,0)/nonNull.length : null;
+  const ytdValues = k.values.map((v, i) => DATA.dates[i] && DATA.dates[i] >= "2026-01-01" ? v : null).filter(v => v != null);
+  const ytdAvg = ytdValues.length ? ytdValues.reduce((a,b)=>a+b,0)/ytdValues.length : null;
+
+  document.getElementById("m-stats").innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">4-Week Average</div>
+      <div class="stat-value">${fmtVal(ma4, k.format)}</div>
+      <div class="stat-sub">trailing window</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Highest Week</div>
+      <div class="stat-value" style="color:var(--up)">${hi ? fmtVal(hi.v, k.format) : "—"}</div>
+      <div class="stat-sub">${hi ? fmtDate(DATA.dates[hi.i]) : "—"}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Lowest Week</div>
+      <div class="stat-value" style="color:var(--down)">${lo ? fmtVal(lo.v, k.format) : "—"}</div>
+      <div class="stat-sub">${lo ? fmtDate(DATA.dates[lo.i]) : "—"}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">YTD Avg (2026)</div>
+      <div class="stat-value">${fmtVal(ytdAvg, k.format)}</div>
+      <div class="stat-sub">${ytdValues.length} weeks</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">All-Time Avg</div>
+      <div class="stat-value">${fmtVal(overallAvg, k.format)}</div>
+      <div class="stat-sub">${nonNull.length} weeks of data</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">vs 4-Wk Avg</div>
+      <div class="stat-value" style="color:${last.v >= ma4 ? 'var(--up)' : 'var(--down)'}">${ma4 ? fmtPct((last.v - ma4) / Math.abs(ma4) * 100) : "—"}</div>
+      <div class="stat-sub">latest vs trend</div>
+    </div>
+  `;
+}
+
+function setRange(weeks) {
+  currentRange = weeks;
+  document.querySelectorAll(".range-pill").forEach(p => p.classList.toggle("active", +p.dataset.range === weeks));
+  const accent = deptColors[currentDept] || "#4f7cff";
+  const total = DATA.dates.length;
+  const start = Math.max(0, total - weeks);
+  const slicedVals = currentKpi.values.slice(start);
+  const slicedDates = DATA.dates.slice(start);
+  detailChart(slicedVals, slicedDates, accent);
+}
+
+// ---------- init ----------
+document.getElementById("last-updated").textContent = fmtDate(DATA.lastUpdated);
+
+let totalKpis = 0;
+for (const d in DATA.departments) totalKpis += DATA.departments[d].length;
+document.getElementById("kpi-total").textContent = totalKpis + " KPIs tracked";
+
+renderDeptOptions();
+renderGrid();
+
+document.getElementById("modal-close").addEventListener("click", () =>
+  document.getElementById("modal-backdrop").classList.remove("open"));
+document.getElementById("modal-backdrop").addEventListener("click", e => {
+  if (e.target.id === "modal-backdrop") e.target.classList.remove("open");
+});
+document.querySelectorAll(".range-pill").forEach(p => {
+  p.addEventListener("click", () => setRange(+p.dataset.range));
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") document.getElementById("modal-backdrop").classList.remove("open");
+});
+</script>
+</body>
+</html>
